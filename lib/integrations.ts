@@ -1,0 +1,105 @@
+// Lead-finder integrations: Firecrawl (web search + scrape) and Hunter.io
+// (email finding). Keys live in DATA_DIR/integrations.json (gitignored,
+// behind Basic Auth, masked in the API, never in the export bundle).
+import { readJson, writeJson } from "./store";
+
+export interface Integrations {
+  firecrawl: string;
+  hunterio: string;
+}
+
+const DEFAULT: Integrations = { firecrawl: "", hunterio: "" };
+
+export async function getIntegrations(): Promise<Integrations> {
+  const x = await readJson<Partial<Integrations> | null>("integrations.json");
+  if (!x || typeof x !== "object") {
+    await writeJson("integrations.json", DEFAULT);
+    return { ...DEFAULT };
+  }
+  return { ...DEFAULT, ...x };
+}
+
+export async function saveIntegrations(next: Integrations): Promise<void> {
+  await writeJson("integrations.json", next);
+}
+
+export interface SearchHit {
+  url: string;
+  title: string;
+  description: string;
+}
+
+// Firecrawl web search (POST /v1/search). Returns hits with url/title/description.
+export async function firecrawlSearch(
+  query: string,
+  limit: number,
+): Promise<SearchHit[]> {
+  const { firecrawl } = await getIntegrations();
+  if (!firecrawl) throw new Error("No Firecrawl key — add it in Settings.");
+  const res = await fetch("https://api.firecrawl.dev/v1/search", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${firecrawl}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ query, limit }),
+    signal: AbortSignal.timeout(45000),
+  });
+  if (!res.ok) {
+    throw new Error(`Firecrawl ${res.status}: ${(await res.text()).slice(0, 160)}`);
+  }
+  const j = await res.json();
+  const data = Array.isArray(j?.data) ? j.data : [];
+  return data.map((d: { url?: string; title?: string; description?: string }) => ({
+    url: d.url ?? "",
+    title: d.title ?? "",
+    description: d.description ?? "",
+  }));
+}
+
+export interface FoundEmail {
+  name: string;
+  email: string;
+  role: string;
+  confidence: number;
+}
+
+// Hunter.io domain-search — same call Hunter's email_finder.py uses.
+export async function hunterDomainSearch(domain: string): Promise<FoundEmail[]> {
+  const { hunterio } = await getIntegrations();
+  if (!hunterio) return [];
+  const url = new URL("https://api.hunter.io/v2/domain-search");
+  url.searchParams.set("domain", domain);
+  url.searchParams.set("api_key", hunterio);
+  url.searchParams.set("limit", "5");
+  try {
+    const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
+    if (!res.ok) return [];
+    const j = await res.json();
+    const emails = j?.data?.emails ?? [];
+    return emails.map(
+      (e: {
+        first_name?: string;
+        last_name?: string;
+        value?: string;
+        position?: string;
+        confidence?: number;
+      }) => ({
+        name: `${e.first_name ?? ""} ${e.last_name ?? ""}`.trim(),
+        email: e.value ?? "",
+        role: e.position ?? "",
+        confidence: e.confidence ?? 0,
+      }),
+    );
+  } catch {
+    return [];
+  }
+}
+
+export function domainOf(rawUrl: string): string {
+  try {
+    return new URL(rawUrl).hostname.replace(/^www\./, "");
+  } catch {
+    return "";
+  }
+}

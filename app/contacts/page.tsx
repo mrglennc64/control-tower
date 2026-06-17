@@ -223,20 +223,25 @@ export default function ContactsPage() {
     mutate();
   }
 
-  async function pullHunter() {
+  async function findLeads() {
+    const query = window.prompt(
+      "Describe the acquirer leads to find on the web:",
+      "companies that acquire B2B SaaS, micro-SaaS, and AI agent products",
+    );
+    if (!query) return;
     setBusy(true);
-    setMsg("Pulling leads from Hunter…");
+    setMsg("Searching the web for acquirers…");
     try {
-      const res = await fetch(api("/api/contacts/import-hunter"), {
+      const r = await fetch(api("/api/leads/find"), {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query, count: 6 }),
       });
-      const out = await res.json();
-      if (!res.ok) throw new Error(out.error || "failed");
-      setMsg(
-        `Hunter: added ${out.added} leads from ${out.files?.length ?? 0} file(s).`,
-      );
-    } catch (err) {
-      setMsg(`Hunter import failed: ${(err as Error).message}`);
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || "failed");
+      setMsg(`Found ${j.added} companies (${j.withEmail} with emails). Tagged web-found.`);
+    } catch (e) {
+      setMsg(`Find leads failed: ${(e as Error).message}`);
     }
     setBusy(false);
     mutate();
@@ -253,12 +258,12 @@ export default function ContactsPage() {
         </div>
         <div className="flex gap-2">
           <button
-            onClick={pullHunter}
+            onClick={findLeads}
             disabled={busy}
-            className="rounded-md border px-3 py-2 text-sm disabled:opacity-50"
-            style={{ color: "var(--ct-teal)" }}
+            className="rounded-md px-3 py-2 text-sm font-medium text-black disabled:opacity-50"
+            style={{ background: "var(--ct-accent)" }}
           >
-            Pull from Hunter
+            Find leads (web)
           </button>
           {scoringAll ? (
             <button
