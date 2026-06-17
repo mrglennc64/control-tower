@@ -179,3 +179,27 @@ export interface Milestone {
   createdAt: string; // ISO datetime
   updatedAt: string; // ISO datetime
 }
+
+// --- Contacts (with CSV import) ------------------------------------------
+export interface Contact {
+  id: string;
+  name: string;
+  email: string;
+  company: string;
+  phone: string;
+  tags: string[];
+  notes: string;
+  createdAt: string; // ISO datetime
+  updatedAt: string; // ISO datetime
+}
+
+// Target fields a CSV column can be mapped to during import.
+export const CONTACT_FIELDS = [
+  "name",
+  "email",
+  "company",
+  "phone",
+  "tags",
+  "notes",
+] as const;
+export type ContactField = (typeof CONTACT_FIELDS)[number];

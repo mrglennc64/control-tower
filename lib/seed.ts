@@ -8,6 +8,7 @@ import type {
   Task,
   Entity,
   Milestone,
+  Contact,
 } from "./types";
 
 const MAILMAN = "C:\\Users\\carin\\OneDrive\\Dokument\\mailman";
@@ -222,3 +223,6 @@ export const SEED_ENTITIES: Entity[] = [
 
 // Starts empty — add milestones from the Timeline tab.
 export const SEED_MILESTONES: Milestone[] = [];
+
+// Contacts — starts empty; add via the form or CSV import.
+export const SEED_CONTACTS: Contact[] = [];

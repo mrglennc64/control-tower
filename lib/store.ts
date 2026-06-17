@@ -11,6 +11,7 @@ import {
   SEED_TASKS,
   SEED_ENTITIES,
   SEED_MILESTONES,
+  SEED_CONTACTS,
 } from "./seed";
 
 // --- Data location -------------------------------------------------------
@@ -36,6 +37,7 @@ const SEEDS: Record<string, unknown> = {
   "tasks.json": SEED_TASKS,
   "entities.json": SEED_ENTITIES,
   "milestones.json": SEED_MILESTONES,
+  "contacts.json": SEED_CONTACTS,
   "meta.json": SEED_META,
 };
 
