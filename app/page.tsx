@@ -2,7 +2,15 @@
 
 import Link from "next/link";
 import useSWR from "swr";
-import { STAGES, type Buyer, type Product, type Reminder } from "@/lib/types";
+import {
+  STAGES,
+  type Buyer,
+  type Product,
+  type Reminder,
+  type Task,
+  type Entity,
+  type Milestone,
+} from "@/lib/types";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -18,6 +26,9 @@ export default function Overview() {
   const { data: buyers } = useSWR<Buyer[]>("/api/buyers", fetcher);
   const { data: products } = useSWR<Product[]>("/api/products", fetcher);
   const { data: reminders } = useSWR<Reminder[]>("/api/reminders", fetcher);
+  const { data: tasks } = useSWR<Task[]>("/api/tasks", fetcher);
+  const { data: entities } = useSWR<Entity[]>("/api/entities", fetcher);
+  const { data: milestones } = useSWR<Milestone[]>("/api/milestones", fetcher);
 
   const list = buyers ?? [];
   const activeProducts = (products ?? []).filter(
@@ -40,6 +51,16 @@ export default function Overview() {
       .map((r) => ({ date: r.dueDate!, label: r.title })),
   ].sort((a, b) => (a.date < b.date ? -1 : 1));
   const nextDue = dueItems[0];
+
+  const taskList = tasks ?? [];
+  const inProgress = taskList.filter((t) => t.column === "In progress").length;
+  const blocked = taskList.filter((t) => t.column === "Blocked").length;
+  const entityCount = (entities ?? []).length;
+
+  const today = new Date().toISOString().slice(0, 10);
+  const nextMilestone = (milestones ?? [])
+    .filter((m) => !m.done && m.date && m.date >= today)
+    .sort((a, b) => (a.date! < b.date! ? -1 : 1))[0];
 
   return (
     <div className="max-w-6xl">
@@ -74,6 +95,30 @@ export default function Overview() {
           label="Deal temperature"
           value={String(dealTemp)}
           hint="buyers past “Replied”"
+        />
+        <Tile
+          href="/workboard"
+          label="In-progress builds"
+          value={String(inProgress)}
+          hint={blocked > 0 ? `${blocked} blocked` : "nothing blocked"}
+        />
+        <Tile
+          href="/timeline"
+          label="Next milestone"
+          value={nextMilestone?.date ?? "—"}
+          hint={nextMilestone ? nextMilestone.title : "none scheduled"}
+        />
+        <Tile
+          href="/entities"
+          label="Entities"
+          value={String(entityCount)}
+          hint="companies tracked"
+        />
+        <Tile
+          href="/finance"
+          label="Financials"
+          value="View"
+          hint="cash, burn, runway"
         />
       </div>
 

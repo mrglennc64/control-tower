@@ -82,42 +82,16 @@ export const SEED_PRODUCTS: Product[] = [
   },
 ];
 
-// v1 ships with no real buyers yet — one example row to show the shape.
-// Replace or delete via the UI (or edit buyers.json by hand).
-export const SEED_BUYERS: Buyer[] = [
-  {
-    id: "example-buyer",
-    name: "Example Buyer Inc. (delete me)",
-    category: "strategic",
-    fitScore: 3,
-    stage: "Not contacted",
-    lastActivity: null,
-    nextAction: "Send one-pager",
-    nextActionDate: null,
-    notes: "Placeholder row. Edit or delete from the Outreach tab.",
-    createdAt: "2026-01-01T00:00:00.000Z",
-    updatedAt: "2026-01-01T00:00:00.000Z",
-  },
-];
+// Starts empty — add buyers from the Outreach tab.
+export const SEED_BUYERS: Buyer[] = [];
 
 export const SEED_META: Meta = {
   appName: "Founder Control Tower",
   lastBackup: null,
 };
 
-// v1 ships with no real reminders — one example to show the shape.
-export const SEED_REMINDERS: Reminder[] = [
-  {
-    id: "example-reminder",
-    title: "Example reminder (delete me)",
-    dueDate: null,
-    type: "Custom",
-    done: false,
-    notes: "Placeholder. Add or delete from the Deadlines tab.",
-    createdAt: "2026-01-01T00:00:00.000Z",
-    updatedAt: "2026-01-01T00:00:00.000Z",
-  },
-];
+// Starts empty — add reminders from the Deadlines tab.
+export const SEED_REMINDERS: Reminder[] = [];
 
 // Document Vault — pre-seeded with the real artifacts in the mailman folder.
 // "location" points at the file on disk; edit/add more from the Vault tab.
@@ -183,22 +157,8 @@ export const SEED_FINANCE: FinanceState = {
   updatedAt: "2026-01-01T00:00:00.000Z",
 };
 
-// Engineering Workboard — one example card to show the shape.
-export const SEED_TASKS: Task[] = [
-  {
-    id: "example-task",
-    title: "Example card (delete me)",
-    component: "control-tower",
-    priority: "Medium",
-    estimate: "1d",
-    dependencies: "",
-    repo: "mrglennc64/control-tower",
-    column: "Backlog",
-    notes: "Placeholder. Add or delete from the Workboard tab.",
-    createdAt: "2026-01-01T00:00:00.000Z",
-    updatedAt: "2026-01-01T00:00:00.000Z",
-  },
-];
+// Starts empty — add cards from the Workboard tab.
+export const SEED_TASKS: Task[] = [];
 
 // Company Entities — pre-seeded with the known/planned entities.
 export const SEED_ENTITIES: Entity[] = [
@@ -260,16 +220,5 @@ export const SEED_ENTITIES: Entity[] = [
   },
 ];
 
-// Timeline & Milestones — one example to show the shape.
-export const SEED_MILESTONES: Milestone[] = [
-  {
-    id: "example-milestone",
-    title: "Example milestone (delete me)",
-    date: null,
-    category: "Other",
-    done: false,
-    notes: "Placeholder. Add or delete from the Timeline tab.",
-    createdAt: "2026-01-01T00:00:00.000Z",
-    updatedAt: "2026-01-01T00:00:00.000Z",
-  },
-];
+// Starts empty — add milestones from the Timeline tab.
+export const SEED_MILESTONES: Milestone[] = [];

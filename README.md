@@ -32,6 +32,9 @@ Data lives as JSON files outside the repo so it can sync across machines via One
 Location defaults to `%USERPROFILE%\OneDrive\Dokument\mailman\data`. Override with `DATA_DIR` (see `.env.local.example`). On every server start, all data files are snapshotted to `data/backups/<timestamp>/`. Writes are atomic (temp file → rename) and serialized per file.
 
 ## Run
+Double-click **`start.cmd`** — it installs dependencies on first run, starts the server, and opens the dashboard in your browser.
+
+Or manually:
 ```bash
 npm install
 npm run dev
