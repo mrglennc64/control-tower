@@ -13,6 +13,9 @@ import {
   SEED_MILESTONES,
   SEED_CONTACTS,
   SEED_CHATS,
+  SEED_CREDIT_TASKS,
+  SEED_CREDIT_ACCOUNTS,
+  SEED_CREDIT_PROFILE,
 } from "./seed";
 
 // --- Data location -------------------------------------------------------
@@ -40,6 +43,9 @@ const SEEDS: Record<string, unknown> = {
   "milestones.json": SEED_MILESTONES,
   "contacts.json": SEED_CONTACTS,
   "chats.json": SEED_CHATS,
+  "credit-tasks.json": SEED_CREDIT_TASKS,
+  "credit-accounts.json": SEED_CREDIT_ACCOUNTS,
+  "credit-profile.json": SEED_CREDIT_PROFILE,
   "meta.json": SEED_META,
 };
 

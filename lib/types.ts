@@ -219,3 +219,51 @@ export interface Conversation {
   createdAt: string; // ISO datetime
   updatedAt: string; // ISO datetime
 }
+
+// --- Business Credit journey ---------------------------------------------
+export const CREDIT_TIERS = [
+  "Foundation",
+  "Vendor (Net-30)",
+  "Store card",
+  "Bank card",
+  "Credit line",
+  "Corporate (no PG)",
+] as const;
+export type CreditTier = (typeof CREDIT_TIERS)[number];
+
+export const CREDIT_STATUS = [
+  "researching",
+  "applied",
+  "open",
+  "closed",
+  "denied",
+] as const;
+export type CreditStatus = (typeof CREDIT_STATUS)[number];
+
+export interface CreditTask {
+  id: string;
+  phase: string;
+  text: string;
+  done: boolean;
+}
+
+export interface CreditAccount {
+  id: string;
+  name: string;
+  tier: CreditTier;
+  limit: number;
+  balance: number;
+  status: CreditStatus;
+  reportsTo: string; // e.g. "D&B, Experian"
+  opened: string | null; // YYYY-MM-DD
+  notes: string;
+}
+
+export interface CreditProfile {
+  ein: string;
+  dunsNumber: string;
+  paydex: number; // 0–100
+  businessBank: boolean;
+  notes: string;
+  updatedAt: string;
+}

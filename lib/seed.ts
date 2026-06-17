@@ -10,6 +10,9 @@ import type {
   Milestone,
   Contact,
   Conversation,
+  CreditTask,
+  CreditAccount,
+  CreditProfile,
 } from "./types";
 
 const MAILMAN = "C:\\Users\\carin\\OneDrive\\Dokument\\mailman";
@@ -262,3 +265,41 @@ export const SEED_CONTACTS: Contact[] = [
 
 // Chats — persistent AI conversations. Starts empty.
 export const SEED_CHATS: Conversation[] = [];
+
+// Business Credit — roadmap checklist seeded from the 5-phase plan.
+const ct = (phase: string, text: string): CreditTask => ({
+  id: `${phase}-${text}`.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 60),
+  phase,
+  text,
+  done: false,
+});
+
+export const SEED_CREDIT_TASKS: CreditTask[] = [
+  ct("Immediate", "Register a D-U-N-S number (free, mandatory) at Dun & Bradstreet"),
+  ct("Immediate", "Audit spending — move personal card spend to the business bank account"),
+  ct("Immediate", "Apply for 3 Net-30s (Uline, Quill, Grainger); spend $50–100, pay immediately"),
+  ct("Phase 1 — Foundation", "LLC or Corp with an EIN"),
+  ct("Phase 1 — Foundation", "Dedicated business phone line (listed in 411)"),
+  ct("Phase 1 — Foundation", "Professional email (not @gmail) + business website"),
+  ct("Phase 1 — Foundation", "Business checking account; route all spending through it"),
+  ct("Phase 2 — Vendor Net-30s", "Open 3–5 Net-30 vendor accounts that report to D&B/Experian/Equifax"),
+  ct("Phase 2 — Vendor Net-30s", "Buy small needed supplies; pay invoices before 30 days"),
+  ct("Phase 2 — Vendor Net-30s", "Establish a Paydex score"),
+  ct("Phase 3 — Store / small cards", "Open Amazon Business / Staples / Home Depot accounts"),
+  ct("Phase 3 — Store / small cards", "Use for operations; keep utilization under 30%"),
+  ct("Phase 4 — Unsecured high-limit", "Apply at big banks (Chase, Amex, BofA) using history + PG"),
+  ct("Phase 4 — Unsecured high-limit", "Hold liquid cash in the bank to lift limits ($25k–$100k)"),
+  ct("Phase 5 — Corporate (no PG)", "Build audited financials + strong annual revenue"),
+  ct("Phase 5 — Corporate (no PG)", "Secure large lines based on company financials (no SSN/PG)"),
+];
+
+export const SEED_CREDIT_ACCOUNTS: CreditAccount[] = [];
+
+export const SEED_CREDIT_PROFILE: CreditProfile = {
+  ein: "",
+  dunsNumber: "",
+  paydex: 0,
+  businessBank: false,
+  notes: "",
+  updatedAt: "2026-01-01T00:00:00.000Z",
+};
