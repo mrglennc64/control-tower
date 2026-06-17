@@ -8,6 +8,9 @@ import {
   SEED_REMINDERS,
   SEED_DOCUMENTS,
   SEED_FINANCE,
+  SEED_TASKS,
+  SEED_ENTITIES,
+  SEED_MILESTONES,
 } from "./seed";
 
 // --- Data location -------------------------------------------------------
@@ -30,6 +33,9 @@ const SEEDS: Record<string, unknown> = {
   "reminders.json": SEED_REMINDERS,
   "documents.json": SEED_DOCUMENTS,
   "finance.json": SEED_FINANCE,
+  "tasks.json": SEED_TASKS,
+  "entities.json": SEED_ENTITIES,
+  "milestones.json": SEED_MILESTONES,
   "meta.json": SEED_META,
 };
 

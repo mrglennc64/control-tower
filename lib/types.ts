@@ -111,3 +111,71 @@ export interface FinanceState {
   entries: FinanceEntry[];
   updatedAt: string; // ISO datetime
 }
+
+// --- Engineering Workboard (kanban) --------------------------------------
+export const TASK_COLUMNS = [
+  "Backlog",
+  "In progress",
+  "Blocked",
+  "Ready for test",
+  "Done",
+] as const;
+export type TaskColumn = (typeof TASK_COLUMNS)[number];
+
+export const TASK_PRIORITIES = ["Low", "Medium", "High"] as const;
+export type TaskPriority = (typeof TASK_PRIORITIES)[number];
+
+export interface Task {
+  id: string;
+  title: string;
+  component: string;
+  priority: TaskPriority;
+  estimate: string; // free text, e.g. "2d"
+  dependencies: string;
+  repo: string;
+  column: TaskColumn;
+  notes: string;
+  createdAt: string; // ISO datetime
+  updatedAt: string; // ISO datetime
+}
+
+// --- Company Entities ----------------------------------------------------
+export const ENTITY_STATUS = ["Active", "Planned", "Dormant", "Closed"] as const;
+export type EntityStatus = (typeof ENTITY_STATUS)[number];
+
+export interface Entity {
+  id: string;
+  name: string;
+  entityType: string; // e.g. AB, LLC
+  jurisdiction: string; // e.g. Sweden, Wyoming (US)
+  purpose: string;
+  ownership: string;
+  assets: string;
+  status: EntityStatus;
+  nextFilingDate: string | null; // YYYY-MM-DD
+  notes: string;
+  createdAt: string; // ISO datetime
+  updatedAt: string; // ISO datetime
+}
+
+// --- Timeline & Milestones -----------------------------------------------
+export const MILESTONE_CATEGORIES = [
+  "Product",
+  "Outreach",
+  "Legal",
+  "Banking",
+  "Launch",
+  "Other",
+] as const;
+export type MilestoneCategory = (typeof MILESTONE_CATEGORIES)[number];
+
+export interface Milestone {
+  id: string;
+  title: string;
+  date: string | null; // YYYY-MM-DD
+  category: MilestoneCategory;
+  done: boolean;
+  notes: string;
+  createdAt: string; // ISO datetime
+  updatedAt: string; // ISO datetime
+}

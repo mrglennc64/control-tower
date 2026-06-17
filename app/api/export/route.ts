@@ -7,6 +7,9 @@ import type {
   Reminder,
   DocumentItem,
   FinanceState,
+  Task,
+  Entity,
+  Milestone,
 } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -50,6 +53,9 @@ export async function GET(req: NextRequest) {
   const reminders = await readJson<Reminder[]>("reminders.json");
   const documents = await readJson<DocumentItem[]>("documents.json");
   const finance = await readJson<FinanceState>("finance.json");
+  const tasks = await readJson<Task[]>("tasks.json");
+  const entities = await readJson<Entity[]>("entities.json");
+  const milestones = await readJson<Milestone[]>("milestones.json");
   const meta = await readJson<Meta>("meta.json");
   const bundle = {
     exportedAt: new Date().toISOString(),
@@ -59,6 +65,9 @@ export async function GET(req: NextRequest) {
     reminders,
     documents,
     finance,
+    tasks,
+    entities,
+    milestones,
   };
   return new NextResponse(JSON.stringify(bundle, null, 2), {
     headers: {

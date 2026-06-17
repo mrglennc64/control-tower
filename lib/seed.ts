@@ -5,6 +5,9 @@ import type {
   Reminder,
   DocumentItem,
   FinanceState,
+  Task,
+  Entity,
+  Milestone,
 } from "./types";
 
 const MAILMAN = "C:\\Users\\carin\\OneDrive\\Dokument\\mailman";
@@ -179,3 +182,94 @@ export const SEED_FINANCE: FinanceState = {
   entries: [],
   updatedAt: "2026-01-01T00:00:00.000Z",
 };
+
+// Engineering Workboard — one example card to show the shape.
+export const SEED_TASKS: Task[] = [
+  {
+    id: "example-task",
+    title: "Example card (delete me)",
+    component: "control-tower",
+    priority: "Medium",
+    estimate: "1d",
+    dependencies: "",
+    repo: "mrglennc64/control-tower",
+    column: "Backlog",
+    notes: "Placeholder. Add or delete from the Workboard tab.",
+    createdAt: "2026-01-01T00:00:00.000Z",
+    updatedAt: "2026-01-01T00:00:00.000Z",
+  },
+];
+
+// Company Entities — pre-seeded with the known/planned entities.
+export const SEED_ENTITIES: Entity[] = [
+  {
+    id: "perfect-hold-ab",
+    name: "Perfect Hold AB",
+    entityType: "AB",
+    jurisdiction: "Sweden",
+    purpose: "Primary operating / holding company.",
+    ownership: "",
+    assets: "",
+    status: "Active",
+    nextFilingDate: null,
+    notes: "",
+    createdAt: "2026-01-01T00:00:00.000Z",
+    updatedAt: "2026-01-01T00:00:00.000Z",
+  },
+  {
+    id: "wyoming-llc",
+    name: "Wyoming LLC",
+    entityType: "LLC",
+    jurisdiction: "Wyoming (US)",
+    purpose: "US entity.",
+    ownership: "",
+    assets: "",
+    status: "Active",
+    nextFilingDate: null,
+    notes: "",
+    createdAt: "2026-01-01T00:00:00.000Z",
+    updatedAt: "2026-01-01T00:00:00.000Z",
+  },
+  {
+    id: "swedish-record-label-ab",
+    name: "Swedish record label AB",
+    entityType: "AB",
+    jurisdiction: "Sweden",
+    purpose: "Record label.",
+    ownership: "",
+    assets: "",
+    status: "Active",
+    nextFilingDate: null,
+    notes: "",
+    createdAt: "2026-01-01T00:00:00.000Z",
+    updatedAt: "2026-01-01T00:00:00.000Z",
+  },
+  {
+    id: "ngineagent-ab",
+    name: "NgineAgent AB",
+    entityType: "AB",
+    jurisdiction: "Sweden",
+    purpose: "Entity for NgineAgent (if/when created).",
+    ownership: "",
+    assets: "NgineAgent IP",
+    status: "Planned",
+    nextFilingDate: null,
+    notes: "",
+    createdAt: "2026-01-01T00:00:00.000Z",
+    updatedAt: "2026-01-01T00:00:00.000Z",
+  },
+];
+
+// Timeline & Milestones — one example to show the shape.
+export const SEED_MILESTONES: Milestone[] = [
+  {
+    id: "example-milestone",
+    title: "Example milestone (delete me)",
+    date: null,
+    category: "Other",
+    done: false,
+    notes: "Placeholder. Add or delete from the Timeline tab.",
+    createdAt: "2026-01-01T00:00:00.000Z",
+    updatedAt: "2026-01-01T00:00:00.000Z",
+  },
+];

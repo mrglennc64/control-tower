@@ -9,6 +9,9 @@ const links = [
   { href: "/deadlines", label: "Deadlines" },
   { href: "/vault", label: "Vault" },
   { href: "/finance", label: "Finance" },
+  { href: "/workboard", label: "Workboard" },
+  { href: "/entities", label: "Entities" },
+  { href: "/timeline", label: "Timeline" },
 ];
 
 export default function Nav() {
