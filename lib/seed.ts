@@ -9,6 +9,7 @@ import type {
   Entity,
   Milestone,
   Contact,
+  Conversation,
 } from "./types";
 
 const MAILMAN = "C:\\Users\\carin\\OneDrive\\Dokument\\mailman";
@@ -224,5 +225,40 @@ export const SEED_ENTITIES: Entity[] = [
 // Starts empty — add milestones from the Timeline tab.
 export const SEED_MILESTONES: Milestone[] = [];
 
-// Contacts — starts empty; add via the form or CSV import.
-export const SEED_CONTACTS: Contact[] = [];
+// Contacts — seeded with well-known companies/marketplaces that ACQUIRE, buy,
+// or roll up software / IP / online businesses. Starting points to verify and
+// enrich (emails left blank — fill from their sites or an enrichment tool).
+const acq = (
+  id: string,
+  name: string,
+  tag: string,
+  notes: string,
+): Contact => ({
+  id,
+  name,
+  email: "",
+  company: name,
+  phone: "",
+  tags: ["acquirer", tag],
+  notes,
+  createdAt: "2026-01-01T00:00:00.000Z",
+  updatedAt: "2026-01-01T00:00:00.000Z",
+});
+
+export const SEED_CONTACTS: Contact[] = [
+  acq("acquire-com", "Acquire.com", "marketplace", "Marketplace to buy/sell startups & SaaS (formerly MicroAcquire). https://acquire.com"),
+  acq("flippa", "Flippa", "marketplace", "Marketplace for buying/selling online businesses, apps & IP. https://flippa.com"),
+  acq("empire-flippers", "Empire Flippers", "marketplace", "Curated marketplace for established online businesses. https://empireflippers.com"),
+  acq("fe-international", "FE International", "M&A advisor", "M&A advisory for SaaS, e-commerce & content businesses. https://feinternational.com"),
+  acq("quiet-light", "Quiet Light", "M&A advisor", "Brokerage for online businesses & digital assets. https://quietlight.com"),
+  acq("tiny", "Tiny", "roll-up", "Acquires and holds wonderful internet businesses for the long term. https://tiny.com"),
+  acq("constellation", "Constellation Software", "roll-up", "Acquires vertical-market software companies (public). https://csisoftware.com"),
+  acq("saas-group", "saas.group", "roll-up", "Acquires and grows B2B SaaS companies. https://saas.group"),
+  acq("sureswift", "SureSwift Capital", "micro-PE", "Acquires and operates bootstrapped SaaS. https://sureswiftcapital.com"),
+  acq("xo-capital", "XO Capital", "micro-PE", "Micro-PE acquiring SaaS & software products. https://xo.capital"),
+  acq("dura-software", "Dura Software", "roll-up", "Acquires niche/vertical SaaS to operate long-term. https://durasoftware.com"),
+  acq("micro-acquire-funds", "Micro-PE / search funds", "micro-PE", "Category: individual acquirers & search funds buying small software/IP. Add specific firms here."),
+];
+
+// Chats — persistent AI conversations. Starts empty.
+export const SEED_CHATS: Conversation[] = [];

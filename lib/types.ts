@@ -205,3 +205,17 @@ export const CONTACT_FIELDS = [
   "notes",
 ] as const;
 export type ContactField = (typeof CONTACT_FIELDS)[number];
+
+// --- Chat (persistent conversations, like a normal AI site) --------------
+export interface ChatMsg {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export interface Conversation {
+  id: string;
+  title: string;
+  messages: ChatMsg[];
+  createdAt: string; // ISO datetime
+  updatedAt: string; // ISO datetime
+}

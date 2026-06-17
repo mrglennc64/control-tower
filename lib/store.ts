@@ -12,6 +12,7 @@ import {
   SEED_ENTITIES,
   SEED_MILESTONES,
   SEED_CONTACTS,
+  SEED_CHATS,
 } from "./seed";
 
 // --- Data location -------------------------------------------------------
@@ -38,6 +39,7 @@ const SEEDS: Record<string, unknown> = {
   "entities.json": SEED_ENTITIES,
   "milestones.json": SEED_MILESTONES,
   "contacts.json": SEED_CONTACTS,
+  "chats.json": SEED_CHATS,
   "meta.json": SEED_META,
 };
 

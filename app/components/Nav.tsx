@@ -13,6 +13,7 @@ const links = [
   { href: "/workboard", label: "Workboard" },
   { href: "/entities", label: "Entities" },
   { href: "/timeline", label: "Timeline" },
+  { href: "/chat", label: "Chat" },
   { href: "/ask", label: "Ask AI" },
   { href: "/settings", label: "Settings" },
 ];
