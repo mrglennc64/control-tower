@@ -15,6 +15,7 @@ const links = [
   { href: "/timeline", label: "Timeline" },
   { href: "/credit", label: "Business Credit" },
   { href: "/strategy", label: "Strategy" },
+  { href: "/agents", label: "Agents" },
   { href: "/chat", label: "Chat" },
   { href: "/ask", label: "Ask AI" },
   { href: "/settings", label: "Settings" },
