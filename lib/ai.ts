@@ -31,7 +31,7 @@ const DEFAULTS: AIProvider[] = [
     id: "openrouter",
     label: "OpenRouter",
     baseUrl: "https://openrouter.ai/api/v1",
-    model: "meta-llama/llama-3.3-70b-instruct:free",
+    model: "openrouter/free",
     apiKey: "",
     enabled: true,
   },
