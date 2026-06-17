@@ -21,11 +21,16 @@ SITE="/etc/nginx/sites-available/${DOMAIN}"
 
 echo ">> Control Tower deploy for https://${DOMAIN}"
 
-# 1. Port free? (don't collide with heyroya/trapcrm)
+# 1. Port free? (don't collide with heyroya/trapcrm). On redeploy our own
+#    service holds the port, which is fine — restart rebinds it.
 if ss -ltnp 2>/dev/null | grep -q ":${PORT} "; then
-  echo "!! Port ${PORT} already in use — edit PORT in this script and re-run."
-  ss -ltnp | grep ":${PORT} " || true
-  exit 1
+  if systemctl is-active --quiet "${SERVICE}"; then
+    echo ">> Port ${PORT} held by ${SERVICE} (redeploy) — continuing"
+  else
+    echo "!! Port ${PORT} already in use by another process — edit PORT and re-run."
+    ss -ltnp | grep ":${PORT} " || true
+    exit 1
+  fi
 fi
 
 # 2. Node >= 20
