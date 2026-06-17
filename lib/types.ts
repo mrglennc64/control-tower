@@ -189,6 +189,8 @@ export interface Contact {
   phone: string;
   tags: string[];
   notes: string;
+  aiSummary?: string; // one-line AI summary
+  aiScore?: number; // AI priority score 1–5 (5 = highest)
   createdAt: string; // ISO datetime
   updatedAt: string; // ISO datetime
 }

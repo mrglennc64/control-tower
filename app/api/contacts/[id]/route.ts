@@ -31,6 +31,8 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
     "phone",
     "tags",
     "notes",
+    "aiSummary",
+    "aiScore",
   ];
   for (const key of editable) {
     if (key in patch) {

@@ -52,6 +52,7 @@ export default function ContactsPage() {
   const [draft, setDraft] = useState("");
   const [drafting, setDrafting] = useState(false);
   const [draftVia, setDraftVia] = useState("");
+  const [scoring, setScoring] = useState(false);
 
   const filtered = useMemo(() => {
     const list = contacts ?? [];
@@ -90,6 +91,32 @@ export default function ContactsPage() {
     await fetch(api(`/api/contacts/${id}`), { method: "DELETE" });
     setEditing(null);
     mutate();
+  }
+
+  async function scoreContact() {
+    if (!editing) return;
+    setScoring(true);
+    try {
+      const r = await fetch(api("/api/ai/score"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contact: editing }),
+      });
+      const j = await r.json();
+      const updated = { ...editing, aiSummary: j.summary, aiScore: j.score };
+      setEditing(updated);
+      if (editing.id) {
+        await fetch(api(`/api/contacts/${editing.id}`), {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ aiSummary: j.summary, aiScore: j.score }),
+        });
+        mutate();
+      }
+    } catch (e) {
+      setMsg(`Score failed: ${(e as Error).message}`);
+    }
+    setScoring(false);
   }
 
   async function draftOutreach() {
@@ -263,6 +290,7 @@ export default function ContactsPage() {
           <thead>
             <tr className="border-b text-left" style={{ color: "var(--ct-muted)" }}>
               <th className="px-4 py-3 font-medium">Name</th>
+              <th className="px-4 py-3 font-medium">Score</th>
               <th className="px-4 py-3 font-medium">Email</th>
               <th className="px-4 py-3 font-medium">Company</th>
               <th className="px-4 py-3 font-medium">Phone</th>
@@ -273,14 +301,14 @@ export default function ContactsPage() {
           <tbody>
             {isLoading && (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center" style={{ color: "var(--ct-muted)" }}>
+                <td colSpan={7} className="px-4 py-6 text-center" style={{ color: "var(--ct-muted)" }}>
                   Loading…
                 </td>
               </tr>
             )}
             {!isLoading && filtered.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center" style={{ color: "var(--ct-muted)" }}>
+                <td colSpan={7} className="px-4 py-6 text-center" style={{ color: "var(--ct-muted)" }}>
                   No contacts. Add one, import a CSV, or pull from Hunter.
                 </td>
               </tr>
@@ -303,6 +331,18 @@ export default function ContactsPage() {
                     <div className="mt-0.5 max-w-md truncate text-xs" style={{ color: "var(--ct-muted)" }}>
                       {c.notes}
                     </div>
+                  )}
+                  {c.aiSummary && (
+                    <div className="mt-0.5 max-w-md truncate text-xs italic" style={{ color: "var(--ct-teal)" }}>
+                      {c.aiSummary}
+                    </div>
+                  )}
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap">
+                  {c.aiScore ? (
+                    <span style={{ color: "var(--ct-accent)" }}>{"★".repeat(c.aiScore)}</span>
+                  ) : (
+                    <span style={{ color: "var(--ct-muted)" }}>—</span>
                   )}
                 </td>
                 <td className="px-4 py-3" style={{ color: "var(--ct-muted)" }}>{c.email || "—"}</td>
@@ -360,6 +400,26 @@ export default function ContactsPage() {
               <Field label="Notes">
                 <textarea className="input min-h-24" value={editing.notes ?? ""} onChange={(e) => setEditing({ ...editing, notes: e.target.value })} />
               </Field>
+
+              <div className="rounded-md border p-3" style={{ background: "var(--ct-surface-2)" }}>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium" style={{ color: "var(--ct-muted)" }}>AI summary &amp; score</span>
+                  <button
+                    onClick={scoreContact}
+                    disabled={scoring}
+                    className="rounded border px-2 py-1 text-xs disabled:opacity-50"
+                    style={{ color: "var(--ct-teal)" }}
+                  >
+                    {scoring ? "Scoring…" : "Summarize & score"}
+                  </button>
+                </div>
+                {(editing.aiScore || editing.aiSummary) && (
+                  <div className="mt-2 text-xs" style={{ color: "var(--ct-muted)" }}>
+                    <span style={{ color: "var(--ct-accent)" }}>{"★".repeat(editing.aiScore || 0)}</span>{" "}
+                    {editing.aiSummary}
+                  </div>
+                )}
+              </div>
 
               <div className="rounded-md border p-3" style={{ background: "var(--ct-surface-2)" }}>
                 <div className="mb-2 flex items-center justify-between">
