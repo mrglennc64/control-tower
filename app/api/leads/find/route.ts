@@ -22,6 +22,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: (e as Error).message }, { status: 400 });
   }
 
+  // Skip aggregators/social/blogs — we want company sites, not articles.
+  const SKIP = new Set([
+    "reddit.com", "medium.com", "youtube.com", "linkedin.com", "quora.com",
+    "twitter.com", "x.com", "facebook.com", "wikipedia.org", "github.com",
+    "ycombinator.com", "substack.com", "forbes.com", "techcrunch.com",
+    "google.com", "bing.com", "pinterest.com", "instagram.com",
+  ]);
+
   const contacts = await readJson<Contact[]>("contacts.json");
   const haveDomain = new Set(
     contacts.map((c) => domainOf(c.notes.match(/https?:\/\/\S+/)?.[0] ?? "")).filter(Boolean),
@@ -34,6 +42,7 @@ export async function POST(req: NextRequest) {
   for (const hit of hits) {
     const domain = domainOf(hit.url);
     if (!domain || seen.has(domain) || haveDomain.has(domain)) continue;
+    if (SKIP.has(domain)) continue;
     seen.add(domain);
 
     const emails = await hunterDomainSearch(domain);
