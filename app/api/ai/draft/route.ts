@@ -17,6 +17,11 @@ export async function POST(req: NextRequest) {
     .filter(Boolean)
     .join("\n");
 
+  const context: string =
+    typeof body?.context === "string" && body.context.trim()
+      ? body.context.trim()
+      : "Goal: open a conversation.";
+
   const result = await chat([
     {
       role: "system",
@@ -27,7 +32,7 @@ export async function POST(req: NextRequest) {
     },
     {
       role: "user",
-      content: `Draft a first-touch outreach message to this contact:\n${facts}\n\nGoal: open a conversation.`,
+      content: `Draft a first-touch outreach message to:\n${facts}\n\n${context}`,
     },
   ]);
 

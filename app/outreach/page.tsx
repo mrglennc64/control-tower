@@ -34,6 +34,9 @@ export default function OutreachPage() {
     fetcher,
   );
   const [editing, setEditing] = useState<Partial<Buyer> | null>(null);
+  const [draft, setDraft] = useState("");
+  const [drafting, setDrafting] = useState(false);
+  const [draftVia, setDraftVia] = useState("");
 
   const counts = useMemo(() => {
     const map = Object.fromEntries(STAGES.map((s) => [s, 0])) as Record<
@@ -83,6 +86,43 @@ export default function OutreachPage() {
     mutate();
   }
 
+  async function draftOutreach() {
+    if (!editing) return;
+    setDrafting(true);
+    setDraft("");
+    setDraftVia("");
+    try {
+      const r = await fetch(api("/api/ai/draft"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contact: {
+            name: editing.name,
+            company: editing.category,
+            tags: [editing.stage, editing.category].filter(Boolean),
+            notes: [editing.notes, editing.nextAction && `Next: ${editing.nextAction}`]
+              .filter(Boolean)
+              .join(". "),
+          },
+          context:
+            "This is a prospective ACQUIRER for a business/product we are selling (NgineAgent). " +
+            `They are currently at pipeline stage "${editing.stage}". ` +
+            "Draft a short outreach to move the conversation forward toward the acquisition.",
+        }),
+      });
+      const j = await r.json();
+      if (j.text) {
+        setDraft(j.text);
+        setDraftVia(`${j.provider} · ${j.model}`);
+      } else {
+        setDraft("Couldn't draft — all providers failed. Add a key in Settings or use the Ask tab.");
+      }
+    } catch (e) {
+      setDraft(`Error: ${(e as Error).message}`);
+    }
+    setDrafting(false);
+  }
+
   return (
     <div className="max-w-6xl">
       <header className="mb-6 flex items-center justify-between">
@@ -108,7 +148,7 @@ export default function OutreachPage() {
             Export JSON
           </a>
           <button
-            onClick={() => setEditing(emptyBuyer())}
+            onClick={() => { setEditing(emptyBuyer()); setDraft(""); setDraftVia(""); }}
             className="rounded-md px-3 py-2 text-sm font-medium text-black"
             style={{ background: "var(--ct-accent)" }}
           >
@@ -184,7 +224,7 @@ export default function OutreachPage() {
                 <td className="px-4 py-3">
                   <button
                     className="font-medium hover:underline"
-                    onClick={() => setEditing({ ...b })}
+                    onClick={() => { setEditing({ ...b }); setDraft(""); setDraftVia(""); }}
                   >
                     {b.name}
                   </button>
@@ -311,6 +351,40 @@ export default function OutreachPage() {
                   onChange={(e) => setEditing({ ...editing, notes: e.target.value })}
                 />
               </Field>
+
+              <div className="rounded-md border p-3" style={{ background: "var(--ct-surface-2)" }}>
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-xs font-medium" style={{ color: "var(--ct-muted)" }}>AI outreach draft</span>
+                  <button
+                    onClick={draftOutreach}
+                    disabled={drafting}
+                    className="rounded border px-2 py-1 text-xs disabled:opacity-50"
+                    style={{ color: "var(--ct-teal)" }}
+                  >
+                    {drafting ? "Drafting…" : "Draft outreach"}
+                  </button>
+                </div>
+                {draft && (
+                  <>
+                    <textarea
+                      className="input min-h-28"
+                      value={draft}
+                      onChange={(e) => setDraft(e.target.value)}
+                    />
+                    <div className="mt-2 flex items-center gap-3">
+                      <button onClick={() => navigator.clipboard.writeText(draft)} className="text-xs" style={{ color: "var(--ct-teal)" }}>Copy</button>
+                      <button
+                        onClick={() => setEditing({ ...editing, notes: `${editing.notes ? editing.notes + "\n\n" : ""}--- Draft ---\n${draft}` })}
+                        className="text-xs"
+                        style={{ color: "var(--ct-teal)" }}
+                      >
+                        Append to notes
+                      </button>
+                      {draftVia && <span className="text-xs" style={{ color: "var(--ct-muted)" }}>via {draftVia}</span>}
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
             <div className="mt-6 flex gap-2">
               <button
