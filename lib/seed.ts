@@ -1,4 +1,13 @@
-import type { Buyer, Product, Meta, Reminder } from "./types";
+import type {
+  Buyer,
+  Product,
+  Meta,
+  Reminder,
+  DocumentItem,
+  FinanceState,
+} from "./types";
+
+const MAILMAN = "C:\\Users\\carin\\OneDrive\\Dokument\\mailman";
 
 // Pre-seeded inventory of the real portfolio (read-only list in v1).
 // Sourced from the asset inventory of the existing repos.
@@ -106,3 +115,67 @@ export const SEED_REMINDERS: Reminder[] = [
     updatedAt: "2026-01-01T00:00:00.000Z",
   },
 ];
+
+// Document Vault — pre-seeded with the real artifacts in the mailman folder.
+// "location" points at the file on disk; edit/add more from the Vault tab.
+export const SEED_DOCUMENTS: DocumentItem[] = [
+  {
+    id: "ngineagent-im",
+    title: "Information Memorandum — NgineAgent",
+    type: "IM",
+    location: `${MAILMAN}\\INFORMATION MEMORANDUM — NGINEAGENT.pdf`,
+    tags: ["ngineagent", "sale"],
+    notes: "Formal buyer-facing memorandum.",
+    addedAt: "2026-01-01T00:00:00.000Z",
+    updatedAt: "2026-01-01T00:00:00.000Z",
+  },
+  {
+    id: "ngineagent-overview",
+    title: "NgineAgent — CEO Engine Overview",
+    type: "One-pager",
+    location: `${MAILMAN}\\NgineAgent-CEO-Engine-Overview (3).pdf`,
+    tags: ["ngineagent", "sale"],
+    notes: "Product overview / one-pager.",
+    addedAt: "2026-01-01T00:00:00.000Z",
+    updatedAt: "2026-01-01T00:00:00.000Z",
+  },
+  {
+    id: "ngineagent-engine-ref",
+    title: "NgineAgent — Engine Reference",
+    type: "Technical",
+    location: `${MAILMAN}\\ngineagent-engine-reference (3).pdf`,
+    tags: ["ngineagent", "technical"],
+    notes: "Technical reference / appendix.",
+    addedAt: "2026-01-01T00:00:00.000Z",
+    updatedAt: "2026-01-01T00:00:00.000Z",
+  },
+  {
+    id: "northern-star",
+    title: "Northern Star Systems",
+    type: "Other",
+    location: `${MAILMAN}\\Northern-Star-Systems (8).pdf`,
+    tags: ["company"],
+    notes: "Company / product overview.",
+    addedAt: "2026-01-01T00:00:00.000Z",
+    updatedAt: "2026-01-01T00:00:00.000Z",
+  },
+  {
+    id: "exitpreneur",
+    title: "Exitpreneur's Playbook",
+    type: "Other",
+    location: `${MAILMAN}\\Exitpreneur's Playbook - Full Book.pdf`,
+    tags: ["reference", "exit"],
+    notes: "Reference reading on exit strategy.",
+    addedAt: "2026-01-01T00:00:00.000Z",
+    updatedAt: "2026-01-01T00:00:00.000Z",
+  },
+];
+
+// Financial Snapshot — starts empty; fill in from the Finance tab.
+export const SEED_FINANCE: FinanceState = {
+  currency: "SEK",
+  cashOnHand: 0,
+  monthlyBurn: 0,
+  entries: [],
+  updatedAt: "2026-01-01T00:00:00.000Z",
+};

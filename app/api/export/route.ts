@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readJson } from "@/lib/store";
-import type { Buyer, Product, Meta, Reminder } from "@/lib/types";
+import type {
+  Buyer,
+  Product,
+  Meta,
+  Reminder,
+  DocumentItem,
+  FinanceState,
+} from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -41,6 +48,8 @@ export async function GET(req: NextRequest) {
 
   const products = await readJson<Product[]>("products.json");
   const reminders = await readJson<Reminder[]>("reminders.json");
+  const documents = await readJson<DocumentItem[]>("documents.json");
+  const finance = await readJson<FinanceState>("finance.json");
   const meta = await readJson<Meta>("meta.json");
   const bundle = {
     exportedAt: new Date().toISOString(),
@@ -48,6 +57,8 @@ export async function GET(req: NextRequest) {
     products,
     buyers,
     reminders,
+    documents,
+    finance,
   };
   return new NextResponse(JSON.stringify(bundle, null, 2), {
     headers: {

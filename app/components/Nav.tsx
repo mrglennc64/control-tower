@@ -7,6 +7,8 @@ const links = [
   { href: "/", label: "Overview" },
   { href: "/outreach", label: "Outreach" },
   { href: "/deadlines", label: "Deadlines" },
+  { href: "/vault", label: "Vault" },
+  { href: "/finance", label: "Finance" },
 ];
 
 export default function Nav() {

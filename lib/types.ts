@@ -61,3 +61,53 @@ export interface Reminder {
   createdAt: string; // ISO datetime
   updatedAt: string; // ISO datetime
 }
+
+// --- Document Vault ------------------------------------------------------
+export const DOC_TYPES = [
+  "IM",
+  "One-pager",
+  "Technical",
+  "Contract",
+  "NDA",
+  "Diagram",
+  "Pricing",
+  "Other",
+] as const;
+export type DocType = (typeof DOC_TYPES)[number];
+
+export interface DocumentItem {
+  id: string;
+  title: string;
+  type: DocType;
+  location: string; // file path or URL
+  tags: string[];
+  notes: string;
+  addedAt: string; // ISO datetime
+  updatedAt: string; // ISO datetime
+}
+
+// --- Financial Snapshot (minimal — a glance, not a ledger) ---------------
+export const FINANCE_KINDS = [
+  "Revenue",
+  "Asset sale",
+  "One-time expense",
+  "Recurring expense",
+] as const;
+export type FinanceKind = (typeof FINANCE_KINDS)[number];
+
+export interface FinanceEntry {
+  id: string;
+  label: string;
+  amount: number; // positive magnitude; kind determines sign/meaning
+  kind: FinanceKind;
+  date: string | null; // YYYY-MM-DD
+  notes: string;
+}
+
+export interface FinanceState {
+  currency: string;
+  cashOnHand: number;
+  monthlyBurn: number;
+  entries: FinanceEntry[];
+  updatedAt: string; // ISO datetime
+}
