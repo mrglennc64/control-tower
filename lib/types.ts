@@ -220,6 +220,18 @@ export interface Conversation {
   updatedAt: string; // ISO datetime
 }
 
+// --- Strategy (growing knowledge base) -----------------------------------
+export interface StrategyNote {
+  id: string;
+  title: string;
+  content: string;
+  tags: string[];
+  source: string; // manual | paste | chat | ai
+  pinned: boolean; // the AI synthesis is pinned to the top
+  createdAt: string;
+  updatedAt: string;
+}
+
 // --- Business Credit journey ---------------------------------------------
 export const CREDIT_TIERS = [
   "Foundation",

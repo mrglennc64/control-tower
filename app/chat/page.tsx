@@ -112,6 +112,19 @@ export default function ChatPage() {
     });
   }
 
+  async function saveToStrategy(content: string) {
+    await fetch(api("/api/strategy"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: content.slice(0, 50),
+        content,
+        source: "chat",
+      }),
+    });
+    alert("Saved to Strategy.");
+  }
+
   async function onPdf(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     e.target.value = "";
@@ -239,14 +252,25 @@ export default function ChatPage() {
               : "";
             return (
               <div key={i} className={`mb-4 flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div
-                  className="max-w-[80%] whitespace-pre-wrap rounded-lg px-3 py-2 text-sm"
-                  style={{
-                    background: m.role === "user" ? "var(--ct-accent)" : "var(--ct-surface-2)",
-                    color: m.role === "user" ? "#000" : "var(--ct-text)",
-                  }}
-                >
-                  {isDoc ? `📎 ${docName} — attached (AI can read it)` : m.content}
+                <div className="max-w-[80%]">
+                  <div
+                    className="whitespace-pre-wrap rounded-lg px-3 py-2 text-sm"
+                    style={{
+                      background: m.role === "user" ? "var(--ct-accent)" : "var(--ct-surface-2)",
+                      color: m.role === "user" ? "#000" : "var(--ct-text)",
+                    }}
+                  >
+                    {isDoc ? `📎 ${docName} — attached (AI can read it)` : m.content}
+                  </div>
+                  {m.role === "assistant" && !isDoc && (
+                    <button
+                      onClick={() => saveToStrategy(m.content)}
+                      className="mt-1 text-xs"
+                      style={{ color: "var(--ct-teal)" }}
+                    >
+                      ★ Save to Strategy
+                    </button>
+                  )}
                 </div>
               </div>
             );

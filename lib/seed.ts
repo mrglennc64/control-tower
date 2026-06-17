@@ -10,6 +10,7 @@ import type {
   Milestone,
   Contact,
   Conversation,
+  StrategyNote,
   CreditTask,
   CreditAccount,
   CreditProfile,
@@ -265,6 +266,9 @@ export const SEED_CONTACTS: Contact[] = [
 
 // Chats — persistent AI conversations. Starts empty.
 export const SEED_CHATS: Conversation[] = [];
+
+// Strategy — grows as you add notes (paste, chat, manual). Starts empty.
+export const SEED_STRATEGY: StrategyNote[] = [];
 
 // Business Credit — roadmap checklist seeded from the 5-phase plan.
 const ct = (phase: string, text: string): CreditTask => ({

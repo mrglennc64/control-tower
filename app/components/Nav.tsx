@@ -14,6 +14,7 @@ const links = [
   { href: "/entities", label: "Entities" },
   { href: "/timeline", label: "Timeline" },
   { href: "/credit", label: "Business Credit" },
+  { href: "/strategy", label: "Strategy" },
   { href: "/chat", label: "Chat" },
   { href: "/ask", label: "Ask AI" },
   { href: "/settings", label: "Settings" },
