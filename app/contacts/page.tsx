@@ -181,6 +181,20 @@ export default function ContactsPage() {
           >
             Import CSV
           </button>
+          <a
+            href={api("/api/contacts/export?format=smartlead")}
+            className="rounded-md border px-3 py-2 text-sm"
+            style={{ color: "var(--ct-muted)" }}
+          >
+            Export → Smartlead
+          </a>
+          <a
+            href={api("/api/contacts/export")}
+            className="rounded-md border px-3 py-2 text-sm"
+            style={{ color: "var(--ct-muted)" }}
+          >
+            Export CSV
+          </a>
           <button
             onClick={() => {
               setEditing(emptyContact());
