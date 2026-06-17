@@ -7,8 +7,7 @@ import {
   type Milestone,
   type MilestoneCategory,
 } from "@/lib/types";
-
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+import { fetcher, api } from "@/lib/api";
 
 const CATEGORY_COLOR: Record<MilestoneCategory, string> = {
   Product: "var(--ct-teal)",
@@ -44,7 +43,7 @@ export default function TimelinePage() {
   }, [milestones]);
 
   async function toggleDone(m: Milestone) {
-    await fetch(`/api/milestones/${m.id}`, {
+    await fetch(api(`/api/milestones/${m.id}`), {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ done: !m.done }),
@@ -55,13 +54,13 @@ export default function TimelinePage() {
   async function save() {
     if (!editing) return;
     if (editing.id) {
-      await fetch(`/api/milestones/${editing.id}`, {
+      await fetch(api(`/api/milestones/${editing.id}`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editing),
       });
     } else {
-      await fetch("/api/milestones", {
+      await fetch(api("/api/milestones"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editing),
@@ -73,7 +72,7 @@ export default function TimelinePage() {
 
   async function remove(id: string) {
     if (!confirm("Delete this milestone?")) return;
-    await fetch(`/api/milestones/${id}`, { method: "DELETE" });
+    await fetch(api(`/api/milestones/${id}`), { method: "DELETE" });
     setEditing(null);
     mutate();
   }

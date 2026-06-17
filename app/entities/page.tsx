@@ -3,8 +3,7 @@
 import { useState } from "react";
 import useSWR from "swr";
 import { ENTITY_STATUS, type Entity, type EntityStatus } from "@/lib/types";
-
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+import { fetcher, api } from "@/lib/api";
 
 const STATUS_COLOR: Record<EntityStatus, string> = {
   Active: "var(--ct-green)",
@@ -37,13 +36,13 @@ export default function EntitiesPage() {
   async function save() {
     if (!editing) return;
     if (editing.id) {
-      await fetch(`/api/entities/${editing.id}`, {
+      await fetch(api(`/api/entities/${editing.id}`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editing),
       });
     } else {
-      await fetch("/api/entities", {
+      await fetch(api("/api/entities"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editing),
@@ -55,7 +54,7 @@ export default function EntitiesPage() {
 
   async function remove(id: string) {
     if (!confirm("Delete this entity?")) return;
-    await fetch(`/api/entities/${id}`, { method: "DELETE" });
+    await fetch(api(`/api/entities/${id}`), { method: "DELETE" });
     setEditing(null);
     mutate();
   }

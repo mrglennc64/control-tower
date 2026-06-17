@@ -3,8 +3,7 @@
 import { useMemo, useState } from "react";
 import useSWR from "swr";
 import { STAGES, CATEGORIES, type Buyer, type Stage } from "@/lib/types";
-
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+import { fetcher, api } from "@/lib/api";
 
 const STAGE_COLOR: Record<Stage, string> = {
   "Not contacted": "var(--ct-muted)",
@@ -50,7 +49,7 @@ export default function OutreachPage() {
   const maxCount = Math.max(1, ...Object.values(counts));
 
   async function quickStage(id: string, stage: Stage) {
-    await fetch(`/api/buyers/${id}`, {
+    await fetch(api(`/api/buyers/${id}`), {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ stage, lastActivity: new Date().toISOString().slice(0, 10) }),
@@ -61,13 +60,13 @@ export default function OutreachPage() {
   async function save() {
     if (!editing) return;
     if (editing.id) {
-      await fetch(`/api/buyers/${editing.id}`, {
+      await fetch(api(`/api/buyers/${editing.id}`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editing),
       });
     } else {
-      await fetch("/api/buyers", {
+      await fetch(api("/api/buyers"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editing),
@@ -79,7 +78,7 @@ export default function OutreachPage() {
 
   async function remove(id: string) {
     if (!confirm("Delete this buyer?")) return;
-    await fetch(`/api/buyers/${id}`, { method: "DELETE" });
+    await fetch(api(`/api/buyers/${id}`), { method: "DELETE" });
     setEditing(null);
     mutate();
   }
@@ -95,14 +94,14 @@ export default function OutreachPage() {
         </div>
         <div className="flex gap-2">
           <a
-            href="/api/export?format=csv"
+            href={api("/api/export?format=csv")}
             className="rounded-md border px-3 py-2 text-sm"
             style={{ color: "var(--ct-muted)" }}
           >
             Export CSV
           </a>
           <a
-            href="/api/export?format=json"
+            href={api("/api/export?format=json")}
             className="rounded-md border px-3 py-2 text-sm"
             style={{ color: "var(--ct-muted)" }}
           >

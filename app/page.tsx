@@ -11,8 +11,7 @@ import {
   type Entity,
   type Milestone,
 } from "@/lib/types";
-
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+import { fetcher } from "@/lib/api";
 
 const STATUS_COLOR: Record<Product["status"], string> = {
   "for sale": "var(--ct-accent)",

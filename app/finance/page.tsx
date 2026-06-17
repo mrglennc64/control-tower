@@ -8,8 +8,7 @@ import {
   type FinanceKind,
   type FinanceState,
 } from "@/lib/types";
-
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+import { fetcher, api } from "@/lib/api";
 
 // Greens for money in, accent/red for money out.
 const KIND_COLOR: Record<FinanceKind, string> = {
@@ -114,7 +113,7 @@ export default function FinancePage() {
     setSaving(true);
     setSaved(false);
     try {
-      await fetch("/api/finance", {
+      await fetch(api("/api/finance"), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(state),

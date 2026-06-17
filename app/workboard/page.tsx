@@ -9,8 +9,7 @@ import {
   type TaskColumn,
   type TaskPriority,
 } from "@/lib/types";
-
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+import { fetcher, api } from "@/lib/api";
 
 const PRIORITY_COLOR: Record<TaskPriority, string> = {
   High: "var(--ct-red)",
@@ -36,7 +35,7 @@ export default function WorkboardPage() {
   const [editing, setEditing] = useState<Partial<Task> | null>(null);
 
   async function moveCard(id: string, column: TaskColumn) {
-    await fetch(`/api/tasks/${id}`, {
+    await fetch(api(`/api/tasks/${id}`), {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ column }),
@@ -47,13 +46,13 @@ export default function WorkboardPage() {
   async function save() {
     if (!editing) return;
     if (editing.id) {
-      await fetch(`/api/tasks/${editing.id}`, {
+      await fetch(api(`/api/tasks/${editing.id}`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editing),
       });
     } else {
-      await fetch("/api/tasks", {
+      await fetch(api("/api/tasks"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editing),
@@ -65,7 +64,7 @@ export default function WorkboardPage() {
 
   async function remove(id: string) {
     if (!confirm("Delete this card?")) return;
-    await fetch(`/api/tasks/${id}`, { method: "DELETE" });
+    await fetch(api(`/api/tasks/${id}`), { method: "DELETE" });
     setEditing(null);
     mutate();
   }

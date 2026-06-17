@@ -8,8 +8,7 @@ import {
   type Reminder,
   type ReminderType,
 } from "@/lib/types";
-
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+import { fetcher, api } from "@/lib/api";
 
 type Item = {
   key: string;
@@ -101,7 +100,7 @@ export default function DeadlinesPage() {
   const doneReminders = (reminders ?? []).filter((r) => r.done);
 
   async function complete(id: string) {
-    await fetch(`/api/reminders/${id}`, {
+    await fetch(api(`/api/reminders/${id}`), {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ done: true }),
@@ -109,7 +108,7 @@ export default function DeadlinesPage() {
     mutate();
   }
   async function reopen(id: string) {
-    await fetch(`/api/reminders/${id}`, {
+    await fetch(api(`/api/reminders/${id}`), {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ done: false }),
@@ -118,12 +117,12 @@ export default function DeadlinesPage() {
   }
   async function remove(id: string) {
     if (!confirm("Delete this reminder?")) return;
-    await fetch(`/api/reminders/${id}`, { method: "DELETE" });
+    await fetch(api(`/api/reminders/${id}`), { method: "DELETE" });
     mutate();
   }
   async function saveDraft() {
     if (!draft) return;
-    await fetch("/api/reminders", {
+    await fetch(api("/api/reminders"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(draft),

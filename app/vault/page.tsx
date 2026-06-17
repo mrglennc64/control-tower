@@ -3,8 +3,7 @@
 import { useMemo, useState } from "react";
 import useSWR from "swr";
 import { DOC_TYPES, type DocumentItem, type DocType } from "@/lib/types";
-
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+import { fetcher, api } from "@/lib/api";
 
 function emptyDoc(): Partial<DocumentItem> {
   return {
@@ -74,13 +73,13 @@ export default function VaultPage() {
       notes: editing.notes,
     };
     if (editing.id) {
-      await fetch(`/api/documents/${editing.id}`, {
+      await fetch(api(`/api/documents/${editing.id}`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
     } else {
-      await fetch("/api/documents", {
+      await fetch(api("/api/documents"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -92,7 +91,7 @@ export default function VaultPage() {
 
   async function remove(id: string) {
     if (!confirm("Delete this document?")) return;
-    await fetch(`/api/documents/${id}`, { method: "DELETE" });
+    await fetch(api(`/api/documents/${id}`), { method: "DELETE" });
     close();
     mutate();
   }
