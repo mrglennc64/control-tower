@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+/* Founder Control Tower — dark "command center" palette. */
+:root {
+  --ct-bg: #0d1117;
+  --ct-surface: #161b22;
+  --ct-surface-2: #1c2230;
+  --ct-border: #2a3140;
+  --ct-text: #e6edf3;
+  --ct-muted: #8b949e;
+  --ct-accent: #e89938; /* warm orange — matches the wider brand */
+  --ct-green: #2ea043;
+  --ct-teal: #3a8189;
+  --ct-red: #da3633;
+}
+
+html,
+body {
+  background: var(--ct-bg);
+  color: var(--ct-text);
+}
+
+* {
+  border-color: var(--ct-border);
+}
