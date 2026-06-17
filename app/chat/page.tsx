@@ -6,6 +6,49 @@ import type { ChatMsg, Conversation } from "@/lib/types";
 
 type ChatSummary = { id: string; title: string; updatedAt: string; count: number };
 
+// --- PDF text extraction (client-side, pdf.js from CDN) -------------------
+type PdfTextItem = { str?: string };
+type PdfPage = { getTextContent: () => Promise<{ items: PdfTextItem[] }> };
+type PdfDoc = { numPages: number; getPage: (n: number) => Promise<PdfPage> };
+type PdfLib = {
+  getDocument: (o: { data: ArrayBuffer }) => { promise: Promise<PdfDoc> };
+  GlobalWorkerOptions: { workerSrc: string };
+};
+const PDFJS = "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build";
+
+function loadPdfjs(): Promise<PdfLib> {
+  return new Promise((resolve, reject) => {
+    const w = window as unknown as { pdfjsLib?: PdfLib };
+    if (w.pdfjsLib) return resolve(w.pdfjsLib);
+    const s = document.createElement("script");
+    s.src = `${PDFJS}/pdf.min.js`;
+    s.onload = () => {
+      const lib = (window as unknown as { pdfjsLib: PdfLib }).pdfjsLib;
+      lib.GlobalWorkerOptions.workerSrc = `${PDFJS}/pdf.worker.min.js`;
+      resolve(lib);
+    };
+    s.onerror = () => reject(new Error("Failed to load PDF library"));
+    document.body.appendChild(s);
+  });
+}
+
+const PDF_CHAR_CAP = 12000;
+
+async function extractPdfText(file: File): Promise<string> {
+  const lib = await loadPdfjs();
+  const buf = await file.arrayBuffer();
+  const pdf = await lib.getDocument({ data: buf }).promise;
+  let out = "";
+  const maxPages = Math.min(pdf.numPages, 50);
+  for (let i = 1; i <= maxPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    out += content.items.map((it) => it.str ?? "").join(" ") + "\n";
+    if (out.length > PDF_CHAR_CAP + 2000) break;
+  }
+  return out.trim();
+}
+
 const SYSTEM: ChatMsg | { role: "system"; content: string } = {
   role: "system",
   content:
@@ -20,6 +63,7 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [via, setVia] = useState("");
+  const [attaching, setAttaching] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
   async function loadList() {
@@ -66,6 +110,37 @@ export default function ChatPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
+  }
+
+  async function onPdf(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setAttaching(true);
+    try {
+      const text = await extractPdfText(file);
+      if (!text) throw new Error("No extractable text (scanned/image PDF?)");
+      const capped = text.slice(0, PDF_CHAR_CAP);
+      const truncated = text.length > PDF_CHAR_CAP ? "\n\n[document truncated]" : "";
+      let id = activeId;
+      if (!id) {
+        const r = await fetch(api("/api/chats"), { method: "POST" });
+        const c: Conversation = await r.json();
+        id = c.id;
+        setActiveId(id);
+        await loadList();
+      }
+      const docMsg: ChatMsg = {
+        role: "user",
+        content: `📎 PDF: ${file.name}\n\n${capped}${truncated}`,
+      };
+      const next = [...messages, docMsg];
+      setMessages(next);
+      await patch(id!, { messages: next });
+    } catch (err) {
+      alert(`PDF read failed: ${(err as Error).message}`);
+    }
+    setAttaching(false);
   }
 
   async function send() {
@@ -157,19 +232,25 @@ export default function ChatPage() {
               Start a conversation. History is saved on your server.
             </div>
           )}
-          {messages.map((m, i) => (
-            <div key={i} className={`mb-4 flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-              <div
-                className="max-w-[80%] whitespace-pre-wrap rounded-lg px-3 py-2 text-sm"
-                style={{
-                  background: m.role === "user" ? "var(--ct-accent)" : "var(--ct-surface-2)",
-                  color: m.role === "user" ? "#000" : "var(--ct-text)",
-                }}
-              >
-                {m.content}
+          {messages.map((m, i) => {
+            const isDoc = m.content.startsWith("📎 PDF:");
+            const docName = isDoc
+              ? m.content.split("PDF:")[1]?.split("\n")[0]?.trim()
+              : "";
+            return (
+              <div key={i} className={`mb-4 flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                <div
+                  className="max-w-[80%] whitespace-pre-wrap rounded-lg px-3 py-2 text-sm"
+                  style={{
+                    background: m.role === "user" ? "var(--ct-accent)" : "var(--ct-surface-2)",
+                    color: m.role === "user" ? "#000" : "var(--ct-text)",
+                  }}
+                >
+                  {isDoc ? `📎 ${docName} — attached (AI can read it)` : m.content}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
           {busy && (
             <div className="mb-4 flex justify-start">
               <div className="rounded-lg px-3 py-2 text-sm" style={{ background: "var(--ct-surface-2)", color: "var(--ct-muted)" }}>
@@ -183,7 +264,21 @@ export default function ChatPage() {
         {via && (
           <div className="px-4 pb-1 text-xs" style={{ color: "var(--ct-muted)" }}>via {via}</div>
         )}
-        <div className="flex gap-2 border-t p-3">
+        <div className="flex items-end gap-2 border-t p-3">
+          <label
+            className="cursor-pointer rounded-md border px-3 py-2 text-sm"
+            style={{ color: "var(--ct-muted)" }}
+            title="Attach a PDF for the AI to read"
+          >
+            {attaching ? "📎…" : "📎 PDF"}
+            <input
+              type="file"
+              accept="application/pdf,.pdf"
+              className="hidden"
+              onChange={onPdf}
+              disabled={attaching}
+            />
+          </label>
           <textarea
             className="input min-h-[44px] flex-1 resize-none"
             placeholder="Message…  (Enter to send, Shift+Enter for newline)"
