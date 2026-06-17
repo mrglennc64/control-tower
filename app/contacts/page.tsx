@@ -48,6 +48,11 @@ export default function ContactsPage() {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
 
+  // AI draft (for the open contact)
+  const [draft, setDraft] = useState("");
+  const [drafting, setDrafting] = useState(false);
+  const [draftVia, setDraftVia] = useState("");
+
   const filtered = useMemo(() => {
     const list = contacts ?? [];
     if (!q.trim()) return list;
@@ -85,6 +90,32 @@ export default function ContactsPage() {
     await fetch(api(`/api/contacts/${id}`), { method: "DELETE" });
     setEditing(null);
     mutate();
+  }
+
+  async function draftOutreach() {
+    if (!editing) return;
+    setDrafting(true);
+    setDraft("");
+    setDraftVia("");
+    try {
+      const r = await fetch(api("/api/ai/draft"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contact: editing }),
+      });
+      const j = await r.json();
+      if (j.text) {
+        setDraft(j.text);
+        setDraftVia(`${j.provider} · ${j.model}`);
+      } else {
+        setDraft(
+          "Couldn't draft — all providers failed. Add a key in Settings, or try the Ask tab (Puter).",
+        );
+      }
+    } catch (e) {
+      setDraft(`Error: ${(e as Error).message}`);
+    }
+    setDrafting(false);
   }
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -199,6 +230,8 @@ export default function ContactsPage() {
             onClick={() => {
               setEditing(emptyContact());
               setTagsText("");
+              setDraft("");
+              setDraftVia("");
             }}
             className="rounded-md px-3 py-2 text-sm font-medium text-black"
             style={{ background: "var(--ct-accent)" }}
@@ -260,6 +293,8 @@ export default function ContactsPage() {
                     onClick={() => {
                       setEditing({ ...c });
                       setTagsText(c.tags.join(", "));
+                      setDraft("");
+                      setDraftVia("");
                     }}
                   >
                     {c.name}
@@ -325,6 +360,53 @@ export default function ContactsPage() {
               <Field label="Notes">
                 <textarea className="input min-h-24" value={editing.notes ?? ""} onChange={(e) => setEditing({ ...editing, notes: e.target.value })} />
               </Field>
+
+              <div className="rounded-md border p-3" style={{ background: "var(--ct-surface-2)" }}>
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-xs font-medium" style={{ color: "var(--ct-muted)" }}>AI outreach draft</span>
+                  <button
+                    onClick={draftOutreach}
+                    disabled={drafting}
+                    className="rounded border px-2 py-1 text-xs disabled:opacity-50"
+                    style={{ color: "var(--ct-teal)" }}
+                  >
+                    {drafting ? "Drafting…" : "Draft outreach"}
+                  </button>
+                </div>
+                {draft && (
+                  <>
+                    <textarea
+                      className="input min-h-28"
+                      value={draft}
+                      onChange={(e) => setDraft(e.target.value)}
+                    />
+                    <div className="mt-2 flex items-center gap-3">
+                      <button
+                        onClick={() => navigator.clipboard.writeText(draft)}
+                        className="text-xs"
+                        style={{ color: "var(--ct-teal)" }}
+                      >
+                        Copy
+                      </button>
+                      <button
+                        onClick={() =>
+                          setEditing({
+                            ...editing,
+                            notes: `${editing.notes ? editing.notes + "\n\n" : ""}--- Draft ---\n${draft}`,
+                          })
+                        }
+                        className="text-xs"
+                        style={{ color: "var(--ct-teal)" }}
+                      >
+                        Append to notes
+                      </button>
+                      {draftVia && (
+                        <span className="text-xs" style={{ color: "var(--ct-muted)" }}>via {draftVia}</span>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
             <div className="mt-6 flex gap-2">
               <button onClick={saveContact} className="rounded-md px-4 py-2 text-sm font-medium text-black" style={{ background: "var(--ct-accent)" }}>Save</button>
