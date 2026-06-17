@@ -1,7 +1,7 @@
 import { promises as fs } from "fs";
 import path from "path";
 import os from "os";
-import { SEED_PRODUCTS, SEED_BUYERS, SEED_META } from "./seed";
+import { SEED_PRODUCTS, SEED_BUYERS, SEED_META, SEED_REMINDERS } from "./seed";
 
 // --- Data location -------------------------------------------------------
 // Defaults to the OneDrive mailman/data folder so files auto-sync across
@@ -20,6 +20,7 @@ function dataDir(): string {
 const SEEDS: Record<string, unknown> = {
   "products.json": SEED_PRODUCTS,
   "buyers.json": SEED_BUYERS,
+  "reminders.json": SEED_REMINDERS,
   "meta.json": SEED_META,
 };
 

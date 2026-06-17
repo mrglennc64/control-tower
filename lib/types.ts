@@ -41,3 +41,23 @@ export interface Meta {
   appName: string;
   lastBackup: string | null;
 }
+
+export const REMINDER_TYPES = [
+  "Follow-up",
+  "Filing deadline",
+  "Renewal",
+  "Contract",
+  "Custom",
+] as const;
+export type ReminderType = (typeof REMINDER_TYPES)[number];
+
+export interface Reminder {
+  id: string;
+  title: string;
+  dueDate: string | null; // YYYY-MM-DD
+  type: ReminderType;
+  done: boolean;
+  notes: string;
+  createdAt: string; // ISO datetime
+  updatedAt: string; // ISO datetime
+}

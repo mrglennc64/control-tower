@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import useSWR from "swr";
-import { STAGES, type Buyer, type Product } from "@/lib/types";
+import { STAGES, type Buyer, type Product, type Reminder } from "@/lib/types";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -17,6 +17,7 @@ const STATUS_COLOR: Record<Product["status"], string> = {
 export default function Overview() {
   const { data: buyers } = useSWR<Buyer[]>("/api/buyers", fetcher);
   const { data: products } = useSWR<Product[]>("/api/products", fetcher);
+  const { data: reminders } = useSWR<Reminder[]>("/api/reminders", fetcher);
 
   const list = buyers ?? [];
   const activeProducts = (products ?? []).filter(
@@ -29,9 +30,16 @@ export default function Overview() {
     (b) => STAGES.indexOf(b.stage) > STAGES.indexOf("Replied"),
   ).length;
 
-  const nextDue = list
-    .filter((b) => b.nextActionDate)
-    .sort((a, b) => (a.nextActionDate! < b.nextActionDate! ? -1 : 1))[0];
+  // Soonest upcoming item across buyer next-actions and open reminders.
+  const dueItems = [
+    ...list
+      .filter((b) => b.nextActionDate)
+      .map((b) => ({ date: b.nextActionDate!, label: b.name })),
+    ...(reminders ?? [])
+      .filter((r) => !r.done && r.dueDate)
+      .map((r) => ({ date: r.dueDate!, label: r.title })),
+  ].sort((a, b) => (a.date < b.date ? -1 : 1));
+  const nextDue = dueItems[0];
 
   return (
     <div className="max-w-6xl">
@@ -56,10 +64,10 @@ export default function Overview() {
           hint={`${atNdaPlus} at NDA or beyond`}
         />
         <Tile
-          href="/outreach"
+          href="/deadlines"
           label="Next action due"
-          value={nextDue?.nextActionDate ?? "—"}
-          hint={nextDue ? nextDue.name : "nothing scheduled"}
+          value={nextDue?.date ?? "—"}
+          hint={nextDue ? nextDue.label : "nothing scheduled"}
         />
         <Tile
           href="/outreach"

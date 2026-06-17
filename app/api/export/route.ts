@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readJson } from "@/lib/store";
-import type { Buyer, Product, Meta } from "@/lib/types";
+import type { Buyer, Product, Meta, Reminder } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -40,8 +40,15 @@ export async function GET(req: NextRequest) {
   }
 
   const products = await readJson<Product[]>("products.json");
+  const reminders = await readJson<Reminder[]>("reminders.json");
   const meta = await readJson<Meta>("meta.json");
-  const bundle = { exportedAt: new Date().toISOString(), meta, products, buyers };
+  const bundle = {
+    exportedAt: new Date().toISOString(),
+    meta,
+    products,
+    buyers,
+    reminders,
+  };
   return new NextResponse(JSON.stringify(bundle, null, 2), {
     headers: {
       "Content-Type": "application/json",

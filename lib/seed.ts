@@ -1,4 +1,4 @@
-import type { Buyer, Product, Meta } from "./types";
+import type { Buyer, Product, Meta, Reminder } from "./types";
 
 // Pre-seeded inventory of the real portfolio (read-only list in v1).
 // Sourced from the asset inventory of the existing repos.
@@ -92,3 +92,17 @@ export const SEED_META: Meta = {
   appName: "Founder Control Tower",
   lastBackup: null,
 };
+
+// v1 ships with no real reminders — one example to show the shape.
+export const SEED_REMINDERS: Reminder[] = [
+  {
+    id: "example-reminder",
+    title: "Example reminder (delete me)",
+    dueDate: null,
+    type: "Custom",
+    done: false,
+    notes: "Placeholder. Add or delete from the Deadlines tab.",
+    createdAt: "2026-01-01T00:00:00.000Z",
+    updatedAt: "2026-01-01T00:00:00.000Z",
+  },
+];
