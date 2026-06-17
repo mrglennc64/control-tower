@@ -57,6 +57,24 @@ export async function firecrawlSearch(
   }));
 }
 
+// Firecrawl scrape (POST /v1/scrape) — returns the page as markdown.
+export async function firecrawlScrape(url: string): Promise<string> {
+  const { firecrawl } = await getIntegrations();
+  if (!firecrawl) throw new Error("No Firecrawl key — add it in Settings.");
+  const res = await fetch("https://api.firecrawl.dev/v1/scrape", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${firecrawl}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ url, formats: ["markdown"] }),
+    signal: AbortSignal.timeout(40000),
+  });
+  if (!res.ok) throw new Error(`Firecrawl scrape ${res.status}`);
+  const j = await res.json();
+  return (j?.data?.markdown as string) ?? "";
+}
+
 export interface FoundEmail {
   name: string;
   email: string;
