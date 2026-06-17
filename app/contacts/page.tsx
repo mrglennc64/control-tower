@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import useSWR from "swr";
 import { fetcher, api } from "@/lib/api";
 import { parseCsv } from "@/lib/csv";
@@ -34,6 +34,9 @@ export default function ContactsPage() {
     fetcher,
   );
   const [q, setQ] = useState("");
+  const [sortByScore, setSortByScore] = useState(false);
+  const [scoringAll, setScoringAll] = useState(false);
+  const stopRef = useRef(false);
   const [editing, setEditing] = useState<Partial<Contact> | null>(null);
   const [tagsText, setTagsText] = useState("");
 
@@ -55,16 +58,44 @@ export default function ContactsPage() {
   const [scoring, setScoring] = useState(false);
 
   const filtered = useMemo(() => {
-    const list = contacts ?? [];
-    if (!q.trim()) return list;
-    const t = q.toLowerCase();
-    return list.filter((c) =>
-      [c.name, c.email, c.company, c.phone, c.notes, c.tags.join(" ")]
-        .join(" ")
-        .toLowerCase()
-        .includes(t),
-    );
-  }, [contacts, q]);
+    let list = contacts ?? [];
+    if (q.trim()) {
+      const t = q.toLowerCase();
+      list = list.filter((c) =>
+        [c.name, c.email, c.company, c.phone, c.notes, c.tags.join(" ")]
+          .join(" ")
+          .toLowerCase()
+          .includes(t),
+      );
+    }
+    if (sortByScore) {
+      list = [...list].sort((a, b) => (b.aiScore || 0) - (a.aiScore || 0));
+    }
+    return list;
+  }, [contacts, q, sortByScore]);
+
+  async function scoreAll() {
+    setScoringAll(true);
+    stopRef.current = false;
+    setMsg("");
+    try {
+      while (!stopRef.current) {
+        const r = await fetch(api("/api/ai/score-all"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ limit: 8 }),
+        });
+        const j = await r.json();
+        mutate();
+        setMsg(`Scored ${j.total - j.remaining}/${j.total} · ${j.remaining} left`);
+        if (!j.remaining || j.scored === 0) break;
+      }
+    } catch (e) {
+      setMsg(`Score all failed: ${(e as Error).message}`);
+    }
+    setScoringAll(false);
+    setSortByScore(true);
+  }
 
   async function saveContact() {
     if (!editing) return;
@@ -229,6 +260,25 @@ export default function ContactsPage() {
           >
             Pull from Hunter
           </button>
+          {scoringAll ? (
+            <button
+              onClick={() => {
+                stopRef.current = true;
+              }}
+              className="rounded-md border px-3 py-2 text-sm"
+              style={{ color: "var(--ct-red)" }}
+            >
+              Stop scoring
+            </button>
+          ) : (
+            <button
+              onClick={scoreAll}
+              className="rounded-md border px-3 py-2 text-sm"
+              style={{ color: "var(--ct-teal)" }}
+            >
+              Score all
+            </button>
+          )}
           <button
             onClick={() => {
               setCsvOpen(true);
@@ -275,6 +325,14 @@ export default function ContactsPage() {
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
+        <label className="flex items-center gap-2 whitespace-nowrap text-xs" style={{ color: "var(--ct-muted)" }}>
+          <input
+            type="checkbox"
+            checked={sortByScore}
+            onChange={(e) => setSortByScore(e.target.checked)}
+          />
+          Sort by score
+        </label>
         {msg && (
           <span className="text-xs" style={{ color: "var(--ct-muted)" }}>
             {msg}

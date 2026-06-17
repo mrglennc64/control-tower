@@ -113,6 +113,50 @@ async function nextCursor(len: number): Promise<number> {
   return len > 0 ? i % len : 0;
 }
 
+// Summarize + score a single lead/contact-like object. Returns 0 score on failure.
+export async function scoreLead(c: {
+  name?: string;
+  company?: string;
+  email?: string;
+  tags?: string[];
+  notes?: string;
+}): Promise<{ summary: string; score: number; provider: string; model: string }> {
+  const facts = [
+    c.name && `Name: ${c.name}`,
+    c.company && `Company: ${c.company}`,
+    c.email && `Email: ${c.email}`,
+    Array.isArray(c.tags) && c.tags.length && `Tags: ${c.tags.join(", ")}`,
+    c.notes && `Notes: ${c.notes}`,
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  const result = await chat([
+    {
+      role: "system",
+      content:
+        'You analyze an outreach lead and respond with STRICT JSON ONLY, no markdown, no prose: ' +
+        '{"summary": "<=15 word summary", "score": <integer 1-5, 5 = highest priority/fit>}.',
+    },
+    { role: "user", content: `Lead:\n${facts}\n\nReturn the JSON.` },
+  ]);
+
+  let summary = "";
+  let score = 0;
+  const match = result.text.match(/\{[\s\S]*\}/);
+  if (match) {
+    try {
+      const o = JSON.parse(match[0]);
+      summary = String(o.summary ?? "").slice(0, 200);
+      score = Math.max(0, Math.min(5, Math.round(Number(o.score) || 0)));
+    } catch {
+      /* fall through */
+    }
+  }
+  if (!summary) summary = result.text.trim().slice(0, 200);
+  return { summary, score, provider: result.provider, model: result.model };
+}
+
 export async function chat(
   messages: ChatMessage[],
   opts?: { only?: string },
