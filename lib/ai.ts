@@ -31,7 +31,7 @@ const DEFAULTS: AIProvider[] = [
     id: "openrouter",
     label: "OpenRouter",
     baseUrl: "https://openrouter.ai/api/v1",
-    model: "openrouter/free",
+    model: "google/gemma-4-31b-it:free",
     apiKey: "",
     enabled: true,
   },
