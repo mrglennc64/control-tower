@@ -24,6 +24,7 @@ export default function SettingsPage() {
   const [intInfo, setIntInfo] = useState<{
     firecrawl: { hasKey: boolean; hint: string };
     hunterio: { hasKey: boolean; hint: string };
+    camofox?: { hasKey: boolean; url: string };
   } | null>(null);
   const [fc, setFc] = useState("");
   const [hio, setHio] = useState("");
@@ -162,6 +163,14 @@ export default function SettingsPage() {
             Save keys
           </button>
           {intMsg && <span className="text-xs" style={{ color: "var(--ct-green)" }}>{intMsg}</span>}
+        </div>
+        <div className="mt-3 border-t pt-3 text-xs" style={{ color: "var(--ct-muted)" }}>
+          Camofox stealth browser:{" "}
+          {intInfo?.camofox?.hasKey ? (
+            <span style={{ color: "var(--ct-green)" }}>● connected ({intInfo.camofox.url}) — used first for scraping, Firecrawl fallback</span>
+          ) : (
+            <span>not configured (lead finder uses Firecrawl only)</span>
+          )}
         </div>
       </div>
 

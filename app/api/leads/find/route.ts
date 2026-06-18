@@ -4,6 +4,8 @@ import { readJson, writeJson } from "@/lib/store";
 import {
   firecrawlSearch,
   firecrawlScrape,
+  camofoxScrape,
+  getIntegrations,
   hunterDomainSearch,
   domainOf,
 } from "@/lib/integrations";
@@ -60,6 +62,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: (e as Error).message }, { status: 400 });
   }
 
+  // Prefer the self-hosted Camofox stealth browser (proxy-rotated, free) and
+  // fall back to Firecrawl. Decided once per request.
+  const useCamofox = !!(await getIntegrations()).camofoxKey;
+  const scrapePage = async (u: string): Promise<string> => {
+    if (useCamofox) {
+      try {
+        const s = await camofoxScrape(u);
+        if (s && s.length > 60) return s;
+      } catch {
+        /* fall through to Firecrawl */
+      }
+    }
+    return firecrawlScrape(u);
+  };
+
   // Deep pass: scrape up to 3 result pages and AI-extract real firms.
   const firms = new Map<string, Firm>(); // keyed by domain
   let scraped = 0;
@@ -67,7 +84,7 @@ export async function POST(req: NextRequest) {
     if (scraped >= 3 || firms.size >= count) break;
     const pubDomain = domainOf(hit.url);
     try {
-      const md = await firecrawlScrape(hit.url);
+      const md = await scrapePage(hit.url);
       if (!md) continue;
       scraped++;
       for (const f of await extractFirms(md, query)) {

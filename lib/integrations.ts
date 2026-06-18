@@ -6,9 +6,16 @@ import { readJson, writeJson } from "./store";
 export interface Integrations {
   firecrawl: string;
   hunterio: string;
+  camofoxUrl: string; // local stealth browser, e.g. http://127.0.0.1:9377
+  camofoxKey: string; // CAMOFOX_API_KEY
 }
 
-const DEFAULT: Integrations = { firecrawl: "", hunterio: "" };
+const DEFAULT: Integrations = {
+  firecrawl: "",
+  hunterio: "",
+  camofoxUrl: "http://127.0.0.1:9377",
+  camofoxKey: "",
+};
 
 export async function getIntegrations(): Promise<Integrations> {
   const x = await readJson<Partial<Integrations> | null>("integrations.json");
@@ -73,6 +80,53 @@ export async function firecrawlScrape(url: string): Promise<string> {
   if (!res.ok) throw new Error(`Firecrawl scrape ${res.status}`);
   const j = await res.json();
   return (j?.data?.markdown as string) ?? "";
+}
+
+// Camofox stealth-browser scrape (self-hosted, proxy-rotated). Creates a tab
+// (navigates + loads), reads the accessibility snapshot (text + links — great
+// for AI extraction), then closes the tab. Bypasses bot blocks Firecrawl can't.
+export async function camofoxScrape(url: string): Promise<string> {
+  const { camofoxUrl, camofoxKey } = await getIntegrations();
+  if (!camofoxKey) throw new Error("Camofox not configured");
+  const base = camofoxUrl || "http://127.0.0.1:9377";
+  const headers = {
+    Authorization: `Bearer ${camofoxKey}`,
+    "Content-Type": "application/json",
+  };
+  const res = await fetch(`${base}/tabs`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      userId: "ct-leadfinder",
+      sessionKey: `s${Date.now()}`,
+      url,
+    }),
+    signal: AbortSignal.timeout(60000),
+  });
+  if (!res.ok) throw new Error(`camofox tab ${res.status}`);
+  const { tabId } = await res.json();
+  if (!tabId) throw new Error("camofox: no tabId");
+  try {
+    let snap = "";
+    for (let i = 0; i < 3; i++) {
+      const sres = await fetch(
+        `${base}/tabs/${tabId}/snapshot?userId=ct-leadfinder`,
+        { headers, signal: AbortSignal.timeout(30000) },
+      );
+      if (sres.ok) {
+        const j = await sres.json();
+        snap = (j?.snapshot as string) ?? "";
+        if (snap.length > 60) break;
+      }
+      await new Promise((r) => setTimeout(r, 1500));
+    }
+    return snap;
+  } finally {
+    fetch(`${base}/tabs/${tabId}?userId=ct-leadfinder`, {
+      method: "DELETE",
+      headers,
+    }).catch(() => {});
+  }
 }
 
 export interface FoundEmail {

@@ -9,6 +9,7 @@ export async function GET() {
   return NextResponse.json({
     firecrawl: { hasKey: !!i.firecrawl, hint: i.firecrawl ? `…${i.firecrawl.slice(-4)}` : "" },
     hunterio: { hasKey: !!i.hunterio, hint: i.hunterio ? `…${i.hunterio.slice(-4)}` : "" },
+    camofox: { hasKey: !!i.camofoxKey, url: i.camofoxUrl },
   });
 }
 
@@ -20,6 +21,10 @@ export async function PUT(req: NextRequest) {
     current.firecrawl = body.firecrawl.trim();
   if (typeof body?.hunterio === "string" && body.hunterio.trim())
     current.hunterio = body.hunterio.trim();
+  if (typeof body?.camofoxKey === "string" && body.camofoxKey.trim())
+    current.camofoxKey = body.camofoxKey.trim();
+  if (typeof body?.camofoxUrl === "string" && body.camofoxUrl.trim())
+    current.camofoxUrl = body.camofoxUrl.trim();
   await saveIntegrations(current);
   return NextResponse.json({ ok: true });
 }
