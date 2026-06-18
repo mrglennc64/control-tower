@@ -7,12 +7,13 @@ import {
   type Buyer,
   type Reminder,
   type ReminderType,
+  type Subscription,
 } from "@/lib/types";
 import { fetcher, api } from "@/lib/api";
 
 type Item = {
   key: string;
-  source: "Outreach" | "Reminder";
+  source: "Outreach" | "Reminder" | "Renewal";
   title: string;
   sub: string;
   dueDate: string | null;
@@ -54,6 +55,10 @@ export default function DeadlinesPage() {
     "/api/reminders",
     fetcher,
   );
+  const { data: subscriptions } = useSWR<Subscription[]>(
+    "/api/subscriptions",
+    fetcher,
+  );
   const [draft, setDraft] = useState<Partial<Reminder> | null>(null);
   const today = todayStr();
 
@@ -78,12 +83,22 @@ export default function DeadlinesPage() {
         dueDate: r.dueDate,
         reminderId: r.id,
       }));
-    return [...fromBuyers, ...fromReminders].sort((a, b) => {
+    const fromSubs: Item[] = (subscriptions ?? [])
+      .filter((s) => s.status === "active" && s.nextRenewal)
+      .map((s) => ({
+        key: `sub-${s.id}`,
+        source: "Renewal",
+        title: `Renew ${s.name}${s.amount ? ` (${s.currency} ${s.amount})` : ""}`,
+        sub: s.account || s.provider,
+        dueDate: s.nextRenewal,
+        href: "/subscriptions",
+      }));
+    return [...fromBuyers, ...fromReminders, ...fromSubs].sort((a, b) => {
       if (!a.dueDate) return 1;
       if (!b.dueDate) return -1;
       return a.dueDate < b.dueDate ? -1 : 1;
     });
-  }, [buyers, reminders]);
+  }, [buyers, reminders, subscriptions]);
 
   const grouped = useMemo(() => {
     const g: Record<Bucket, Item[]> = {

@@ -11,6 +11,7 @@ import type {
   Entity,
   Milestone,
   Contact,
+  Subscription,
 } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -58,6 +59,7 @@ export async function GET(req: NextRequest) {
   const entities = await readJson<Entity[]>("entities.json");
   const milestones = await readJson<Milestone[]>("milestones.json");
   const contacts = await readJson<Contact[]>("contacts.json");
+  const subscriptions = await readJson<Subscription[]>("subscriptions.json");
   const meta = await readJson<Meta>("meta.json");
   const bundle = {
     exportedAt: new Date().toISOString(),
@@ -71,6 +73,7 @@ export async function GET(req: NextRequest) {
     entities,
     milestones,
     contacts,
+    subscriptions,
   };
   return new NextResponse(JSON.stringify(bundle, null, 2), {
     headers: {

@@ -220,6 +220,39 @@ export interface Conversation {
   updatedAt: string; // ISO datetime
 }
 
+// --- Subscriptions / hosting (recurring services) ------------------------
+export const BILLING_CYCLES = ["monthly", "quarterly", "yearly", "one-time"] as const;
+export type BillingCycle = (typeof BILLING_CYCLES)[number];
+
+export const SUBSCRIPTION_STATUS = ["active", "cancelled", "expired"] as const;
+export type SubscriptionStatus = (typeof SUBSCRIPTION_STATUS)[number];
+
+export interface Payment {
+  id: string;
+  date: string; // YYYY-MM-DD
+  amount: number;
+  notes: string;
+}
+
+export interface Subscription {
+  id: string;
+  name: string; // "KVM 4", ".COM Domain", "Business Web Hosting"
+  provider: string; // "Hostinger"
+  account: string; // domain / service identifier
+  plan: string;
+  amount: number; // price per cycle
+  currency: string; // default "USD"
+  cycle: BillingCycle;
+  nextRenewal: string | null; // YYYY-MM-DD
+  autoRenew: boolean;
+  status: SubscriptionStatus;
+  paymentMethod: string;
+  payments: Payment[];
+  notes: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // --- Strategy (growing knowledge base) -----------------------------------
 export interface StrategyNote {
   id: string;

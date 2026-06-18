@@ -10,6 +10,7 @@ import type {
   Milestone,
   Contact,
   Conversation,
+  Subscription,
   StrategyNote,
   CreditTask,
   CreditAccount,
@@ -269,6 +270,9 @@ export const SEED_CHATS: Conversation[] = [];
 
 // Strategy — grows as you add notes (paste, chat, manual). Starts empty.
 export const SEED_STRATEGY: StrategyNote[] = [];
+
+// Subscriptions — starts empty; real data is loaded onto the server (kept off git).
+export const SEED_SUBSCRIPTIONS: Subscription[] = [];
 
 // Business Credit — roadmap checklist seeded from the 5-phase plan.
 const ct = (phase: string, text: string): CreditTask => ({
