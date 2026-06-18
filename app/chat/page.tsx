@@ -49,6 +49,26 @@ async function extractPdfText(file: File): Promise<string> {
   return out.trim();
 }
 
+// --- Puter (client-side, no key) for image/vision; takes a File directly ----
+function loadPuter(): Promise<{
+  ai: { chat: (prompt: string, media?: unknown) => Promise<unknown> };
+}> {
+  return new Promise((resolve, reject) => {
+    const w = window as unknown as { puter?: unknown };
+    if (w.puter) return resolve(w.puter as never);
+    const s = document.createElement("script");
+    s.src = "https://js.puter.com/v2/";
+    s.onload = () => resolve(w.puter as never);
+    s.onerror = () => reject(new Error("Failed to load Puter"));
+    document.body.appendChild(s);
+  });
+}
+function puterText(r: unknown): string {
+  if (typeof r === "string") return r;
+  const o = r as { message?: { content?: string }; text?: string };
+  return o?.message?.content ?? o?.text ?? JSON.stringify(r);
+}
+
 const SYSTEM: ChatMsg | { role: "system"; content: string } = {
   role: "system",
   content:
@@ -64,6 +84,7 @@ export default function ChatPage() {
   const [busy, setBusy] = useState(false);
   const [via, setVia] = useState("");
   const [attaching, setAttaching] = useState(false);
+  const [image, setImage] = useState<File | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
 
   async function loadList() {
@@ -157,7 +178,7 @@ export default function ChatPage() {
   }
 
   async function send() {
-    if (!input.trim() || busy) return;
+    if ((!input.trim() && !image) || busy) return;
     let id = activeId;
     const firstMessage = messages.length === 0;
     if (!id) {
@@ -167,7 +188,16 @@ export default function ChatPage() {
       setActiveId(id);
       await loadList();
     }
-    const userMsg: ChatMsg = { role: "user", content: input.trim() };
+    const img = image; // capture before clearing
+    const promptText =
+      input.trim() ||
+      (img ? "Describe this screenshot and call out anything important." : "");
+    const userMsg: ChatMsg = {
+      role: "user",
+      content: img
+        ? `🖼️ ${img.name}${promptText ? `\n\n${promptText}` : ""}`
+        : promptText,
+    };
     const next = [...messages, userMsg];
     setMessages(next);
     setInput("");
@@ -175,21 +205,33 @@ export default function ChatPage() {
     await patch(id!, { messages: next });
 
     try {
-      const r = await fetch(api("/api/ai/chat"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: [SYSTEM, ...next] }),
-      });
-      const j = await r.json();
-      const content =
-        j.text ||
-        "(no response — all providers failed. Add a key in Settings, or try the Ask box for Puter.)";
+      let content: string;
+      let viaLabel = "";
+      if (img) {
+        // Vision via Puter (free, no key) — takes the File directly.
+        const puter = await loadPuter();
+        const r = await puter.ai.chat(promptText, img);
+        content = puterText(r);
+        viaLabel = "Puter (vision)";
+        setImage(null);
+      } else {
+        const r = await fetch(api("/api/ai/chat"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ messages: [SYSTEM, ...next] }),
+        });
+        const j = await r.json();
+        content =
+          j.text ||
+          "(no response — all providers failed. Add a key in Settings, or try the Ask box for Puter.)";
+        viaLabel = j.provider ? `${j.provider} · ${j.model}` : "";
+      }
       const final = [...next, { role: "assistant", content } as ChatMsg];
       setMessages(final);
-      setVia(j.provider ? `${j.provider} · ${j.model}` : "");
+      setVia(viaLabel);
       await patch(id!, { messages: final });
       if (firstMessage) {
-        await patch(id!, { title: userMsg.content.slice(0, 48) });
+        await patch(id!, { title: userMsg.content.replace(/^🖼️ /, "").slice(0, 48) });
         loadList();
       }
     } catch (e) {
@@ -247,6 +289,7 @@ export default function ChatPage() {
           )}
           {messages.map((m, i) => {
             const isDoc = m.content.startsWith("📎 PDF:");
+            const isImg = m.content.startsWith("🖼️ ");
             const docName = isDoc
               ? m.content.split("PDF:")[1]?.split("\n")[0]?.trim()
               : "";
@@ -262,6 +305,11 @@ export default function ChatPage() {
                   >
                     {isDoc ? `📎 ${docName} — attached (AI can read it)` : m.content}
                   </div>
+                  {isImg && (
+                    <div className="mt-1 text-xs" style={{ color: "var(--ct-muted)" }}>
+                      🖼️ screenshot sent to vision AI (image not stored)
+                    </div>
+                  )}
                   {m.role === "assistant" && !isDoc && (
                     <button
                       onClick={() => saveToStrategy(m.content)}
@@ -288,6 +336,12 @@ export default function ChatPage() {
         {via && (
           <div className="px-4 pb-1 text-xs" style={{ color: "var(--ct-muted)" }}>via {via}</div>
         )}
+        {image && (
+          <div className="flex items-center gap-2 px-4 pb-1 text-xs" style={{ color: "var(--ct-teal)" }}>
+            🖼️ {image.name} attached
+            <button onClick={() => setImage(null)} style={{ color: "var(--ct-red)" }}>remove</button>
+          </div>
+        )}
         <div className="flex items-end gap-2 border-t p-3">
           <label
             className="cursor-pointer rounded-md border px-3 py-2 text-sm"
@@ -301,6 +355,23 @@ export default function ChatPage() {
               className="hidden"
               onChange={onPdf}
               disabled={attaching}
+            />
+          </label>
+          <label
+            className="cursor-pointer rounded-md border px-3 py-2 text-sm"
+            style={{ color: "var(--ct-muted)" }}
+            title="Attach a screenshot/image for the AI to see"
+          >
+            🖼️ Image
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                e.target.value = "";
+                if (f) setImage(f);
+              }}
             />
           </label>
           <textarea
@@ -317,7 +388,7 @@ export default function ChatPage() {
           />
           <button
             onClick={send}
-            disabled={busy || !input.trim()}
+            disabled={busy || (!input.trim() && !image)}
             className="rounded-md px-4 py-2 text-sm font-medium text-black disabled:opacity-50"
             style={{ background: "var(--ct-accent)" }}
           >
