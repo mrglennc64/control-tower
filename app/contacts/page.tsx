@@ -349,7 +349,16 @@ export default function ContactsPage() {
         className="overflow-x-auto rounded-lg border"
         style={{ background: "var(--ct-surface)" }}
       >
-        <table className="w-full text-sm">
+        <table className="w-full table-fixed text-sm">
+          <colgroup>
+            <col style={{ width: "30%" }} />
+            <col style={{ width: "8%" }} />
+            <col style={{ width: "20%" }} />
+            <col style={{ width: "17%" }} />
+            <col style={{ width: "11%" }} />
+            <col style={{ width: "10%" }} />
+            <col style={{ width: "4%" }} />
+          </colgroup>
           <thead>
             <tr className="border-b text-left" style={{ color: "var(--ct-muted)" }}>
               <th className="px-4 py-3 font-medium">Name</th>
@@ -391,12 +400,12 @@ export default function ContactsPage() {
                     {c.name}
                   </button>
                   {c.notes && (
-                    <div className="mt-0.5 max-w-md truncate text-xs" style={{ color: "var(--ct-muted)" }}>
+                    <div className="mt-0.5 truncate text-xs" style={{ color: "var(--ct-muted)" }}>
                       {c.notes}
                     </div>
                   )}
                   {c.aiSummary && (
-                    <div className="mt-0.5 max-w-md truncate text-xs italic" style={{ color: "var(--ct-teal)" }}>
+                    <div className="mt-0.5 truncate text-xs italic" style={{ color: "var(--ct-teal)" }}>
                       {c.aiSummary}
                     </div>
                   )}
@@ -408,9 +417,9 @@ export default function ContactsPage() {
                     <span style={{ color: "var(--ct-muted)" }}>—</span>
                   )}
                 </td>
-                <td className="px-4 py-3" style={{ color: "var(--ct-muted)" }}>{c.email || "—"}</td>
-                <td className="px-4 py-3" style={{ color: "var(--ct-muted)" }}>{c.company || "—"}</td>
-                <td className="px-4 py-3" style={{ color: "var(--ct-muted)" }}>{c.phone || "—"}</td>
+                <td className="truncate px-4 py-3" style={{ color: "var(--ct-muted)" }} title={c.email}>{c.email || "—"}</td>
+                <td className="truncate px-4 py-3" style={{ color: "var(--ct-muted)" }} title={c.company}>{c.company || "—"}</td>
+                <td className="truncate px-4 py-3" style={{ color: "var(--ct-muted)" }}>{c.phone || "—"}</td>
                 <td className="px-4 py-3">
                   <div className="flex flex-wrap gap-1">
                     {c.tags.map((t) => (
