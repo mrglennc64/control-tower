@@ -5,7 +5,7 @@ import { api } from "@/lib/api";
 
 const ROLES = ["ceo", "cto", "cmo", "cfo", "engineer", "researcher", "pm", "designer", "qa", "devops", "security", "general"];
 
-type Company = { id: string; name: string; budgetMonthlyCents: number; spentMonthlyCents: number };
+type Company = { id: string; name: string; budgetMonthlyCents: number; spentMonthlyCents: number; status?: string };
 type Agent = { id: string; name: string; role: string; status: string; runtimeConfig?: { heartbeat?: { enabled?: boolean } } };
 type Issue = { id: string; identifier: string; title: string; status: string; assigneeAgentId: string | null };
 type Comment = { id: string; body?: string; content?: string; authorAgentId?: string; createdAt: string };
@@ -32,7 +32,8 @@ export default function AgentsPage() {
   const [taskAgent, setTaskAgent] = useState("");
 
   async function loadCompanies() {
-    setCompanies(await pc("companies").then((r) => r.json()));
+    const all: Company[] = await pc("companies").then((r) => r.json());
+    setCompanies(all.filter((c) => c.status !== "archived"));
   }
   useEffect(() => {
     loadCompanies();
