@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readJson, writeJson } from "@/lib/store";
+import { promises as fs } from "fs";
+import path from "path";
+import { readJson, writeJson, uploadsDir } from "@/lib/store";
 import type { DocumentItem } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -53,10 +55,20 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
 export async function DELETE(_req: NextRequest, { params }: Ctx) {
   const { id } = await params;
   const documents = await readJson<DocumentItem[]>("documents.json");
+  const doc = documents.find((d) => d.id === id);
   const next = documents.filter((d) => d.id !== id);
   if (next.length === documents.length) {
     return NextResponse.json({ error: "not found" }, { status: 404 });
   }
   await writeJson("documents.json", next);
+  // Best-effort cleanup of the uploaded file on disk.
+  if (doc?.file) {
+    try {
+      const dir = await uploadsDir();
+      await fs.unlink(path.join(dir, doc.file.stored));
+    } catch {
+      // already gone — ignore
+    }
+  }
   return NextResponse.json({ ok: true });
 }

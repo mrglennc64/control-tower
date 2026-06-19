@@ -15,6 +15,7 @@ import {
   SEED_CHATS,
   SEED_STRATEGY,
   SEED_SUBSCRIPTIONS,
+  SEED_CLAIMS,
   SEED_CREDIT_TASKS,
   SEED_CREDIT_ACCOUNTS,
   SEED_CREDIT_PROFILE,
@@ -47,6 +48,7 @@ const SEEDS: Record<string, unknown> = {
   "chats.json": SEED_CHATS,
   "strategy.json": SEED_STRATEGY,
   "subscriptions.json": SEED_SUBSCRIPTIONS,
+  "claims.json": SEED_CLAIMS,
   "credit-tasks.json": SEED_CREDIT_TASKS,
   "credit-accounts.json": SEED_CREDIT_ACCOUNTS,
   "credit-profile.json": SEED_CREDIT_PROFILE,
@@ -118,6 +120,14 @@ export async function backup(stamp: string): Promise<void> {
       // file may not exist yet on first run — skip
     }
   }
+}
+
+// Directory for uploaded binary files (documents, etc.). Lives next to the
+// JSON data so it syncs/backs up with everything else.
+export async function uploadsDir(): Promise<string> {
+  const dir = path.join(dataDir(), "uploads");
+  await fs.mkdir(dir, { recursive: true });
+  return dir;
 }
 
 export { dataDir };

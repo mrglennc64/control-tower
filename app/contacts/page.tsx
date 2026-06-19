@@ -248,7 +248,7 @@ export default function ContactsPage() {
   }
 
   return (
-    <div className="max-w-6xl">
+    <div className="max-w-7xl">
       <header className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Contacts</h1>
@@ -351,13 +351,13 @@ export default function ContactsPage() {
       >
         <table className="w-full table-fixed text-sm">
           <colgroup>
-            <col style={{ width: "30%" }} />
-            <col style={{ width: "8%" }} />
-            <col style={{ width: "20%" }} />
-            <col style={{ width: "17%" }} />
-            <col style={{ width: "11%" }} />
+            <col style={{ width: "28%" }} />
+            <col style={{ width: "7%" }} />
+            <col style={{ width: "19%" }} />
+            <col style={{ width: "16%" }} />
             <col style={{ width: "10%" }} />
-            <col style={{ width: "4%" }} />
+            <col style={{ width: "12%" }} />
+            <col style={{ width: "8%" }} />
           </colgroup>
           <thead>
             <tr className="border-b text-left" style={{ color: "var(--ct-muted)" }}>
@@ -433,7 +433,7 @@ export default function ContactsPage() {
                     ))}
                   </div>
                 </td>
-                <td className="px-4 py-3 text-right">
+                <td className="whitespace-nowrap px-4 py-3 text-right">
                   <button
                     onClick={() => removeContact(c.id)}
                     className="text-xs"

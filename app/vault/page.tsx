@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import useSWR from "swr";
 import { DOC_TYPES, type DocumentItem, type DocType } from "@/lib/types";
 import { fetcher, api } from "@/lib/api";
@@ -15,6 +15,12 @@ function emptyDoc(): Partial<DocumentItem> {
   };
 }
 
+function humanSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+}
+
 export default function VaultPage() {
   const { data: documents, mutate, isLoading } = useSWR<DocumentItem[]>(
     "/api/documents",
@@ -24,6 +30,26 @@ export default function VaultPage() {
   const [tagsInput, setTagsInput] = useState("");
   const [search, setSearch] = useState("");
   const [activeTag, setActiveTag] = useState<string | null>(null);
+  const [viewing, setViewing] = useState<DocumentItem | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  async function uploadFiles(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    try {
+      for (const file of Array.from(files)) {
+        const fd = new FormData();
+        fd.append("file", file);
+        fd.append("title", file.name);
+        await fetch(api("/api/documents/upload"), { method: "POST", body: fd });
+      }
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      mutate();
+    }
+  }
 
   const allTags = useMemo(() => {
     const set = new Set<string>();
@@ -105,13 +131,30 @@ export default function VaultPage() {
             Tag-searchable references — IM, one-pagers, contracts, NDAs.
           </p>
         </div>
-        <button
-          onClick={openAdd}
-          className="rounded-md px-3 py-2 text-sm font-medium text-black"
-          style={{ background: "var(--ct-accent)" }}
-        >
-          + Add document
-        </button>
+        <div className="flex gap-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            className="hidden"
+            onChange={(e) => uploadFiles(e.target.files)}
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className="rounded-md border px-3 py-2 text-sm disabled:opacity-50"
+            style={{ color: "var(--ct-teal)" }}
+          >
+            {uploading ? "Uploading…" : "Upload file"}
+          </button>
+          <button
+            onClick={openAdd}
+            className="rounded-md px-3 py-2 text-sm font-medium text-black"
+            style={{ background: "var(--ct-accent)" }}
+          >
+            + Add link/path
+          </button>
+        </div>
       </header>
 
       {/* Search + tag filters */}
@@ -165,7 +208,7 @@ export default function VaultPage() {
         )}
         {!isLoading && (documents?.length ?? 0) === 0 && (
           <p className="text-sm" style={{ color: "var(--ct-muted)" }}>
-            No documents yet.
+            No documents yet. Click <strong>Upload file</strong> to add a PDF, image, or doc you can view here.
           </p>
         )}
         {!isLoading &&
@@ -232,6 +275,28 @@ export default function VaultPage() {
               </p>
             )}
 
+            {d.file && (
+              <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
+                <span style={{ color: "var(--ct-muted)" }}>
+                  📄 {d.file.name} · {humanSize(d.file.size)}
+                </span>
+                <button
+                  onClick={() => setViewing(d)}
+                  className="rounded border px-2 py-0.5 text-xs"
+                  style={{ color: "var(--ct-teal)" }}
+                >
+                  View
+                </button>
+                <a
+                  href={api(`/api/documents/${d.id}/file?download=1`)}
+                  className="rounded border px-2 py-0.5 text-xs"
+                  style={{ color: "var(--ct-muted)" }}
+                >
+                  Download
+                </a>
+              </div>
+            )}
+
             {d.location && (
               <div className="mt-3 text-sm">
                 {d.location.startsWith("http") ? (
@@ -266,6 +331,52 @@ export default function VaultPage() {
           </div>
         ))}
       </div>
+
+      {/* Inline file viewer */}
+      {viewing && viewing.file && (
+        <div
+          className="fixed inset-0 z-20 flex flex-col bg-black/80 p-4"
+          onClick={() => setViewing(null)}
+        >
+          <div className="mb-3 flex items-center justify-between text-sm text-white">
+            <span className="truncate">{viewing.file.name}</span>
+            <div className="flex shrink-0 gap-3">
+              <a
+                href={api(`/api/documents/${viewing.id}/file?download=1`)}
+                onClick={(e) => e.stopPropagation()}
+                className="rounded border border-white/40 px-3 py-1"
+              >
+                Download
+              </a>
+              <button
+                onClick={() => setViewing(null)}
+                className="rounded border border-white/40 px-3 py-1"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+          <div
+            className="flex-1 overflow-auto rounded-lg bg-white"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {viewing.file.mime.startsWith("image/") ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={api(`/api/documents/${viewing.id}/file`)}
+                alt={viewing.file.name}
+                className="mx-auto max-h-full"
+              />
+            ) : (
+              <iframe
+                src={api(`/api/documents/${viewing.id}/file`)}
+                title={viewing.file.name}
+                className="h-full w-full"
+              />
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Add / edit drawer */}
       {editing && (

@@ -75,11 +75,20 @@ export const DOC_TYPES = [
 ] as const;
 export type DocType = (typeof DOC_TYPES)[number];
 
+// An uploaded file stored on the server (in DATA_DIR/uploads), viewable in-app.
+export interface DocFile {
+  stored: string; // filename on disk in uploads/
+  name: string; // original filename
+  mime: string;
+  size: number; // bytes
+}
+
 export interface DocumentItem {
   id: string;
   title: string;
   type: DocType;
-  location: string; // file path or URL
+  location: string; // file path or URL (for reference-only docs)
+  file?: DocFile | null; // an actual uploaded file (viewable in the app)
   tags: string[];
   notes: string;
   addedAt: string; // ISO datetime
@@ -261,6 +270,35 @@ export interface StrategyNote {
   tags: string[];
   source: string; // manual | paste | chat | ai
   pinned: boolean; // the AI synthesis is pinned to the top
+  createdAt: string;
+  updatedAt: string;
+}
+
+// --- Royalty recovery pipeline (TrapRoyaltiesPro / TrapLawPro) ------------
+export const CLAIM_STAGES = [
+  "Lead",
+  "Verified",
+  "Bundled",
+  "Filed",
+  "Recovered",
+  "Paid",
+  "Dead",
+] as const;
+export type ClaimStage = (typeof CLAIM_STAGES)[number];
+
+export interface RoyaltyClaim {
+  id: string;
+  artist: string;
+  track: string;
+  isrc: string;
+  estimatedRecovery: number; // expected $ recoverable
+  recoveredAmount: number; // actual $ recovered
+  feeRate: number; // your consultant fee, default 0.05 (5%)
+  stage: ClaimStage;
+  attorney: string;
+  bundle: string;
+  filedDate: string | null; // YYYY-MM-DD
+  notes: string;
   createdAt: string;
   updatedAt: string;
 }

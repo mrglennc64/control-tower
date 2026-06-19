@@ -11,6 +11,7 @@ import type {
   Contact,
   Conversation,
   Subscription,
+  RoyaltyClaim,
   StrategyNote,
   CreditTask,
   CreditAccount,
@@ -273,6 +274,26 @@ export const SEED_STRATEGY: StrategyNote[] = [];
 
 // Subscriptions — starts empty; real data is loaded onto the server (kept off git).
 export const SEED_SUBSCRIPTIONS: Subscription[] = [];
+
+// Royalty claims — seeded with the known state: 5 bundles filed 06/01 (placeholders;
+// edit with real artists). 97 leads to verify get added/imported as stage "Lead".
+const claim = (n: number): RoyaltyClaim => ({
+  id: `bundle-${n}`,
+  artist: `Bundle ${n} (edit: real artist)`,
+  track: "",
+  isrc: "",
+  estimatedRecovery: 1500,
+  recoveredAmount: 0,
+  feeRate: 0.05,
+  stage: "Filed",
+  attorney: "Atlanta MOA",
+  bundle: `B-${n}`,
+  filedDate: "2026-06-01",
+  notes: "Filed 06/01 — awaiting SoundExchange recovery.",
+  createdAt: "2026-06-01T00:00:00.000Z",
+  updatedAt: "2026-06-01T00:00:00.000Z",
+});
+export const SEED_CLAIMS: RoyaltyClaim[] = [1, 2, 3, 4, 5].map(claim);
 
 // Business Credit — roadmap checklist seeded from the 5-phase plan.
 const ct = (phase: string, text: string): CreditTask => ({

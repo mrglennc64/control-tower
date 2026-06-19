@@ -12,6 +12,7 @@ import type {
   Milestone,
   Contact,
   Subscription,
+  RoyaltyClaim,
 } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -60,6 +61,7 @@ export async function GET(req: NextRequest) {
   const milestones = await readJson<Milestone[]>("milestones.json");
   const contacts = await readJson<Contact[]>("contacts.json");
   const subscriptions = await readJson<Subscription[]>("subscriptions.json");
+  const claims = await readJson<RoyaltyClaim[]>("claims.json");
   const meta = await readJson<Meta>("meta.json");
   const bundle = {
     exportedAt: new Date().toISOString(),
@@ -74,6 +76,7 @@ export async function GET(req: NextRequest) {
     milestones,
     contacts,
     subscriptions,
+    claims,
   };
   return new NextResponse(JSON.stringify(bundle, null, 2), {
     headers: {
