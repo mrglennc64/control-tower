@@ -132,8 +132,29 @@ export default function Overview() {
               className="rounded-lg border p-4"
               style={{ background: "var(--ct-surface)" }}
             >
+              {p.category && (
+                <div
+                  className="mb-1 text-[10px] font-semibold uppercase tracking-wider"
+                  style={{ color: "var(--ct-muted)" }}
+                >
+                  {p.category}
+                </div>
+              )}
               <div className="flex items-center justify-between">
-                <div className="font-medium">{p.name}</div>
+                <div className="font-medium">
+                  {p.url ? (
+                    <a
+                      href={p.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:underline"
+                    >
+                      {p.name} ↗
+                    </a>
+                  ) : (
+                    p.name
+                  )}
+                </div>
                 <span
                   className="rounded-full px-2 py-0.5 text-xs font-medium text-black"
                   style={{ background: STATUS_COLOR[p.status] }}
@@ -144,9 +165,9 @@ export default function Overview() {
               <p className="mt-1 text-sm" style={{ color: "var(--ct-muted)" }}>
                 {p.purpose}
               </p>
-              {p.repo && (
+              {(p.vertical || p.repo) && (
                 <p className="mt-2 text-xs" style={{ color: "var(--ct-muted)" }}>
-                  {p.repo}
+                  {p.vertical ? `Vertical · ${p.vertical}` : p.repo}
                 </p>
               )}
             </div>

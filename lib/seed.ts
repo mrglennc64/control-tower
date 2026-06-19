@@ -20,73 +20,97 @@ import type {
 
 const MAILMAN = "C:\\Users\\carin\\OneDrive\\Dokument\\mailman";
 
-// Pre-seeded inventory of the real portfolio (read-only list in v1).
-// Sourced from the asset inventory of the existing repos.
+// The real product lineup, mirroring northernstarsystems.com.
 export const SEED_PRODUCTS: Product[] = [
   {
-    id: "ngineagent",
-    name: "NgineAgent",
-    status: "for sale",
-    purpose: "CEO-engine / autonomous agent product — the active acquisition target.",
-  },
-  {
-    id: "pam",
-    name: "PAM",
-    status: "active",
-    purpose:
-      "Personal Automation Machine — markdown 'operations brain' (CEO=Pam, VPs Aris/Vesta). The predecessor of this dashboard; its sections map to the v2 modules.",
-    repo: "mrglennc64/PAM",
-  },
-  {
-    id: "hunter",
-    name: "Hunter",
-    status: "active",
-    purpose:
-      "Python lead-intelligence & outreach pipeline — rights-holder/artist discovery, ISRC lookup, email & attorney finders, outreach PDF generation.",
-    repo: "mrglennc64/hunter",
-  },
-  {
-    id: "crm",
-    name: "CRM (Trap Royalties Pro)",
-    status: "active",
-    purpose:
-      "Trap Royalties Pro workspace — trapcrm, the traproyaltiespro site, content generator, HeyRoya design, and outreach assets.",
-    repo: "mrglennc64/CRM",
-  },
-  {
-    id: "heyroya-auto",
-    name: "HeyRoya (auto)",
+    id: "heyroya",
+    name: "HeyRoya",
     status: "production",
-    purpose: "Catalog analysis backend — FastAPI + Celery + Redis + Postgres.",
-    repo: "mrglennc64/auto",
+    category: "Rights & metadata",
+    vertical: "Music rights",
+    purpose:
+      "Music rights validation — ISRC, ISWC, IPI and royalty-gap checks that catch rights-chain errors before they cost royalties.",
   },
   {
-    id: "kataloghub-static",
-    name: "Kataloghub (static)",
+    id: "kataloghub",
+    name: "Kataloghub",
     status: "production",
-    purpose: "White-label, validation-only catalog tool for music publishers.",
-    repo: "mrglennc64/katolog",
+    category: "Catalog correction",
+    vertical: "Music rights",
+    purpose:
+      "Catalog validation and CWR export for Nordic publishers — ISRC, ISWC, IPI checked and corrected at source.",
   },
   {
-    id: "kataloghub-app",
-    name: "Kataloghub App",
+    id: "verseiq",
+    name: "VerseIQ",
     status: "production",
-    purpose: "Partner-facing dashboard for catalog validation workflows.",
-    repo: "mrglennc64/katalog-app",
+    category: "Rights intelligence",
+    vertical: "Music rights",
+    purpose:
+      "Global rights intelligence — territory, registration and coverage gaps surfaced across an entire catalog.",
   },
   {
-    id: "northern-star-cip",
-    name: "Northern Star / CIP",
-    status: "active",
-    purpose: "B2B marketing site for the Compliance Inspection Platform.",
-    repo: "mrglennc64/CIP",
+    id: "traproyaltiespro",
+    name: "TrapRoyaltiesPro",
+    status: "production",
+    category: "Royalty recovery",
+    vertical: "Music rights",
+    purpose:
+      "Forensic, audit-grade royalty recovery — twenty years of black-box methodology encoded as a deterministic ruleset.",
   },
   {
-    id: "besiktning",
-    name: "Besiktning",
-    status: "pre-mvp",
-    purpose: "B2B SaaS for Swedish building inspectors to author protocols.",
-    repo: "mrglennc64/besiktning",
+    id: "cip",
+    name: "CIP",
+    status: "production",
+    category: "Communications intelligence",
+    vertical: "Communications",
+    purpose:
+      "Operator-reviewed scan reports that surface defensible findings, not noise — built for enterprise compliance teams.",
+  },
+  {
+    id: "mediready",
+    name: "MediReady",
+    status: "production",
+    category: "Healthcare workflow",
+    vertical: "Healthcare claims",
+    purpose:
+      "Administrative claims validation — no PHI, no clinical logic. Deterministic corrections with a clean RCM evidence trail.",
+  },
+  {
+    id: "denial-engine",
+    name: "Denial Engine",
+    status: "production",
+    category: "Denial management",
+    vertical: "Healthcare claims",
+    purpose:
+      "Turns a denied claim into a structured analysis, a corrected claim, and a payer-ready appeal packet — grounded in the denial text.",
+  },
+  {
+    id: "perfectbook",
+    name: "PerfectBook",
+    status: "production",
+    category: "Ledgers & books",
+    vertical: "Accounting",
+    purpose:
+      "Reconciliation and field validation for finance teams — every correction backed by a replayable evidence chain.",
+  },
+  {
+    id: "inspection",
+    name: "Inspection",
+    status: "production",
+    category: "Field & site",
+    vertical: "Inspections",
+    purpose:
+      "Turns raw inspection exports into clean, compliant master files in milliseconds — audit-ready the moment they land.",
+  },
+  {
+    id: "web-assessment",
+    name: "Web Assessment",
+    status: "production",
+    category: "Web & CRO",
+    vertical: "Web",
+    purpose:
+      "Reviews sites, payment flows, email automations and content — one operational partner, not five vendors.",
   },
 ];
 

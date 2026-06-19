@@ -34,6 +34,9 @@ export interface Product {
   name: string;
   status: "active" | "production" | "pre-mvp" | "for sale" | "archived";
   purpose: string;
+  category?: string; // e.g. "Rights & metadata"
+  vertical?: string; // e.g. "Music rights"
+  url?: string; // live product page
   repo?: string;
 }
 
