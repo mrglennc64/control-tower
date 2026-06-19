@@ -102,24 +102,33 @@ else
   echo ">> Basic Auth file already exists at $HTPASSWD (leaving as-is)"
 fi
 
-# 8. nginx server block (NEW file — additive, validated before reload)
-echo ">> Writing nginx site ${SITE}"
-cat >"$SITE" <<EOF
+# 8/9. nginx + TLS — IDEMPOTENT. Once HTTPS (listen 443) is configured for the
+# domain, NEVER touch nginx again (rewriting it + relying on certbot to re-add
+# 443 each run can drop the HTTPS block if certbot fails — which broke login
+# once). Only set it up on first install.
+if grep -qs "listen 443" "$SITE"; then
+  echo ">> nginx already has HTTPS for ${DOMAIN} — leaving nginx untouched."
+else
+  echo ">> First-time nginx setup for ${DOMAIN}"
+  # If a cert already exists, write the full HTTPS block directly (no certbot dependency).
+  if [ -f "/etc/letsencrypt/live/${DOMAIN}/fullchain.pem" ]; then
+    cat >"$SITE" <<EOF
 server {
     listen 80;
     listen [::]:80;
     server_name ${DOMAIN};
-
-    # Let certbot's HTTP-01 challenge through without auth.
-    location ^~ /.well-known/acme-challenge/ {
-        auth_basic off;
-        root /var/www/html;
-    }
-
+    location ^~ /.well-known/acme-challenge/ { auth_basic off; root /var/www/html; }
+    location / { return 301 https://\$host\$request_uri; }
+}
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    server_name ${DOMAIN};
+    ssl_certificate     /etc/letsencrypt/live/${DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${DOMAIN}/privkey.pem;
     location / {
         auth_basic           "Control Tower";
         auth_basic_user_file ${HTPASSWD};
-
         proxy_pass         http://127.0.0.1:${PORT};
         proxy_http_version 1.1;
         proxy_set_header   Upgrade \$http_upgrade;
@@ -131,22 +140,31 @@ server {
     }
 }
 EOF
-ln -sf "$SITE" "/etc/nginx/sites-enabled/${DOMAIN}"
-mkdir -p /var/www/html
-
-echo ">> nginx -t"
-nginx -t
-systemctl reload nginx
-
-# 9. TLS via certbot (adds the 443 block + http->https redirect)
-if command -v certbot >/dev/null 2>&1; then
-  echo ">> Requesting TLS cert for ${DOMAIN}"
-  certbot --nginx -d "${DOMAIN}" --redirect --agree-tos -m "${CERTBOT_EMAIL:-mrglenncarter@yahoo.com}" -n || {
-    echo "!! certbot failed — the site is up on HTTP. Re-run: certbot --nginx -d ${DOMAIN}"
-  }
-else
-  echo "!! certbot not installed. App is on HTTP only. Install certbot then:"
-  echo "   certbot --nginx -d ${DOMAIN}"
+    ln -sf "$SITE" "/etc/nginx/sites-enabled/${DOMAIN}"
+    nginx -t && systemctl reload nginx
+  else
+    # No cert yet: write HTTP block, then let certbot issue + add 443 once.
+    cat >"$SITE" <<EOF
+server {
+    listen 80;
+    listen [::]:80;
+    server_name ${DOMAIN};
+    location ^~ /.well-known/acme-challenge/ { auth_basic off; root /var/www/html; }
+    location / {
+        auth_basic           "Control Tower";
+        auth_basic_user_file ${HTPASSWD};
+        proxy_pass         http://127.0.0.1:${PORT};
+        proxy_http_version 1.1;
+        proxy_set_header   Host \$host;
+        proxy_set_header   X-Forwarded-Proto \$scheme;
+    }
+}
+EOF
+    ln -sf "$SITE" "/etc/nginx/sites-enabled/${DOMAIN}"
+    mkdir -p /var/www/html
+    nginx -t && systemctl reload nginx
+    command -v certbot >/dev/null 2>&1 && certbot --nginx -d "${DOMAIN}" --redirect --agree-tos -m "${CERTBOT_EMAIL:-mrglenncarter@yahoo.com}" -n || echo "!! run certbot manually: certbot --nginx -d ${DOMAIN}"
+  fi
 fi
 
 cat <<DONE
