@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { chat } from "@/lib/ai";
+import { loadSkill } from "@/lib/skills";
 
 export const dynamic = "force-dynamic";
 
@@ -22,14 +23,20 @@ export async function POST(req: NextRequest) {
       ? body.context.trim()
       : "Goal: open a conversation.";
 
+  const playbook = await loadSkill("cold-email");
+  const system = [
+    "You are an expert cold/outreach email writer. Apply this playbook:",
+    playbook,
+    "",
+    "TASK OVERRIDE — this is a one-shot draft, not a conversation:",
+    "- Do NOT ask the user any questions. Use ONLY the facts provided below.",
+    "- Never leave placeholders like [Name] or [Company].",
+    "- Keep it to 3–5 sentences, under 120 words.",
+    "- Output ONLY the email body — no subject line, no preamble, no sign-off block.",
+  ].join("\n");
+
   const result = await chat([
-    {
-      role: "system",
-      content:
-        "You write concise, personalized B2B outreach messages (3–5 sentences, under 120 words). " +
-        "Warm, specific, professional. Use the real details provided — never leave placeholders like [Name]. " +
-        "Output ONLY the message body, no subject line, no preamble.",
-    },
+    { role: "system", content: system },
     {
       role: "user",
       content: `Draft a first-touch outreach message to:\n${facts}\n\n${context}`,

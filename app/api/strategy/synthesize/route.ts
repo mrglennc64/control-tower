@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { readJson, writeJson } from "@/lib/store";
 import { chat } from "@/lib/ai";
+import { loadSkill } from "@/lib/skills";
 import type { StrategyNote } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -23,12 +24,16 @@ export async function POST() {
     .join("\n\n")
     .slice(0, 12000);
 
+  const playbook = await loadSkill("product-marketing", 5000);
   const res = await chat([
     {
       role: "system",
       content:
-        "You are a strategist. Consolidate these raw strategy notes into one clear, organized strategy. " +
-        "Use sections (Goals, Key moves, Acquisition/IP sale, Risks, Next actions). Be concise and concrete. " +
+        "You are a product-marketing strategist. Use this positioning playbook to inform your thinking:\n" +
+        playbook +
+        "\n\nNow consolidate the user's raw strategy notes into one clear, organized strategy. " +
+        "Use sections (Positioning, Goals, Key moves, Acquisition/IP sale, Risks, Next actions). " +
+        "Be concise and concrete, and give honest pushback where a plan has a flaw — name the risk before validating. " +
         "Merge overlaps, surface themes, and end with a short prioritized action list. Markdown.",
     },
     { role: "user", content: `My strategy notes:\n\n${corpus}` },
