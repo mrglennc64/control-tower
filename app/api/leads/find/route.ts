@@ -31,12 +31,13 @@ async function extractFirms(markdown: string, query: string): Promise<Firm[]> {
     {
       role: "system",
       content:
-        "Extract the actual companies/firms that ACQUIRE or BUY businesses listed on this page. " +
+        "Extract the actual companies/firms on this page that match the search description. " +
         "Respond with STRICT JSON ONLY: an array of {\"name\": string, \"website\": string}. " +
-        "Use each firm's own website domain (not the article's site). Skip the publisher/author, " +
-        "skip generic blog/aggregator sites, skip anything that isn't a real acquirer. If none, return [].",
+        "Use each firm's own website domain (not the article's/publisher's site). Skip the " +
+        "publisher/author, skip generic blog/aggregator/directory sites, and skip anything that " +
+        "isn't a real company matching the description. If none, return [].",
     },
-    { role: "user", content: `Context: ${query}\n\nPage:\n${markdown.slice(0, 6000)}` },
+    { role: "user", content: `Search description: ${query}\n\nPage:\n${markdown.slice(0, 6000)}` },
   ]);
   const m = res.text.match(/\[[\s\S]*\]/);
   if (!m) return [];
@@ -54,6 +55,10 @@ export async function POST(req: NextRequest) {
     (typeof body?.query === "string" && body.query.trim()) ||
     "firms that acquire or buy B2B SaaS / software / IP businesses";
   const count = Math.max(1, Math.min(12, Number(body?.count) || 8));
+  // Caller-supplied tags let this find any ICP (acquirers, RCM firms, etc.).
+  const tags: string[] = Array.isArray(body?.tags) && body.tags.length
+    ? body.tags.map((t: unknown) => String(t)).filter(Boolean)
+    : ["acquirer", "web-found"];
 
   let hits;
   try {
@@ -133,7 +138,7 @@ export async function POST(req: NextRequest) {
       email: primary?.email ?? "",
       company: domain,
       phone: "",
-      tags: ["acquirer", "web-found"],
+      tags,
       notes: noteLines.join("\n"),
       createdAt: now,
       updatedAt: now,
