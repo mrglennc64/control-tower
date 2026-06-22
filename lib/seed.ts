@@ -11,6 +11,7 @@ import type {
   Contact,
   Conversation,
   Subscription,
+  EmailTemplate,
   RoyaltyClaim,
   StrategyNote,
   CreditTask,
@@ -318,6 +319,10 @@ const claim = (n: number): RoyaltyClaim => ({
   updatedAt: "2026-06-01T00:00:00.000Z",
 });
 export const SEED_CLAIMS: RoyaltyClaim[] = [1, 2, 3, 4, 5].map(claim);
+
+// Outreach email templates — starts empty; the real sequences are populated
+// onto the server from the nss-deliverables files, then edited in-browser.
+export const SEED_EMAILS: EmailTemplate[] = [];
 
 // Business Credit — roadmap checklist seeded from the 5-phase plan.
 const ct = (phase: string, text: string): CreditTask => ({

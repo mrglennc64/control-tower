@@ -277,6 +277,18 @@ export interface StrategyNote {
   updatedAt: string;
 }
 
+// --- Outreach email templates (editable in-browser) ----------------------
+export interface EmailTemplate {
+  id: string;
+  title: string;
+  category: string; // "Sales" | "Marketing" | "Other"
+  body: string; // markdown / plain text, edited in the browser
+  tags: string[];
+  source: string; // "agent" | "manual"
+  createdAt: string;
+  updatedAt: string;
+}
+
 // --- Royalty recovery pipeline (TrapRoyaltiesPro / TrapLawPro) ------------
 export const CLAIM_STAGES = [
   "Lead",
