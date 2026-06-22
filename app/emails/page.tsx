@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import type { EmailTemplate } from "@/lib/types";
 
-const CATEGORIES = ["Sales", "Marketing", "Other"];
+const CATEGORIES = ["Product", "Sales", "Marketing", "Other"];
 
 function empty(): Partial<EmailTemplate> {
   return { title: "", category: "Sales", body: "", tags: [] };
